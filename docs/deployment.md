@@ -91,7 +91,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 ### **2. 環境変数設定**
 
-**Vercel Dashboard > Settings > Environment Variables**
+**Vercel Dashboard > Settings > Environments > Preview and Production > Environment Variables**
 
 #### **Preview環境**
 
