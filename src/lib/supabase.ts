@@ -5,7 +5,6 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 
 // 環境変数の検証と取得
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,6 +23,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // サーバーサイド用のSupabaseクライアント
 export const createServerSupabaseClient = async () => {
+  const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
