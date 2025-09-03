@@ -71,6 +71,55 @@ async function main() {
   }
 
   console.log(`Upserted ${upsertedCount} users`);
+
+  // Seed products
+  const productData = [
+    {
+      id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      name: 'ラッキーピエロバーガー',
+      price: 850,
+      description: 'フレッシュなパティと新鮮な野菜が自慢のバーガー',
+      imageUrl: null,
+    },
+    {
+      id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      name: 'チキンバーガー',
+      price: 750,
+      description: 'ジューシーなチキンパティ使用',
+      imageUrl: null,
+    },
+    {
+      id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+      name: 'ポテトフライ',
+      price: 300,
+      description: 'ホクホクのポテトフライ',
+      imageUrl: null,
+    },
+    {
+      id: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+      name: 'コーラ',
+      price: 200,
+      description: '冷たいコーラ',
+      imageUrl: null,
+    },
+  ];
+
+  let productUpsertedCount = 0;
+  for (const product of productData) {
+    await prisma.product.upsert({
+      where: { id: product.id },
+      update: {
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        imageUrl: product.imageUrl,
+      },
+      create: product,
+    });
+    productUpsertedCount++;
+  }
+
+  console.log(`Upserted ${productUpsertedCount} products`);
 }
 
 main()
