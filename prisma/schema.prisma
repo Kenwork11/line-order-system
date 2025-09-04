@@ -15,15 +15,15 @@ datasource db {
   directUrl = env("DIRECT_URL")      // Direct connection (マイグレーション用)
 }
 
-// Users table - converted from Supabase migration
-model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique @db.VarChar(255)
-  name      String   @db.VarChar(255)
-  avatar    String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+// Products table
+model Product {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  price       Int
+  imageUrl    String?  @map("image_url")
+  description String?
+  isAvailable Boolean  @default(true) @map("is_available")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  @@index([email], map: "idx_users_email")
-  @@map("users")
+  @@map("products")
 }
