@@ -15,18 +15,6 @@ datasource db {
   directUrl = env("DIRECT_URL")      // Direct connection (マイグレーション用)
 }
 
-// Users table - converted from Supabase migration
-model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique @db.VarChar(255)
-  name      String   @db.VarChar(255)
-  avatar    String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
-
-  @@index([email], map: "idx_users_email")
-  @@map("users")
-}
 
 // Products table
 model Product {
@@ -38,35 +26,8 @@ model Product {
   isAvailable Boolean  @default(true) @map("is_available")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
   
-  orderItems  OrderItem[]
 
   @@map("products")
 }
 
-// Orders table
-model Order {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId       String   @map("user_id") @db.VarChar(255)
-  status       String   @default("pending") @db.VarChar(50)
-  totalAmount  Int      @map("total_amount")
-  customerName String?  @map("customer_name") @db.VarChar(255)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
-  
-  orderItems   OrderItem[]
 
-  @@map("orders")
-}
-
-// Order items table
-model OrderItem {
-  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  orderId   String @map("order_id") @db.Uuid
-  productId String @map("product_id") @db.Uuid
-  quantity  Int
-  unitPrice Int    @map("unit_price")
-  
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
-
-  @@map("order_items")
-}
