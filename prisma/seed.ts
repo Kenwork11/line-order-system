@@ -7,70 +7,99 @@ async function main() {
   console.log(`Environment: ${environment}`);
   console.log('Seeding database...');
 
-  const userData = [
+  const productData = [
     {
-      id: '11111111-1111-1111-1111-111111111111',
-      email: 'john@example.com',
-      name: 'John Doe',
-      avatar:
-        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-      createdAt: new Date('2024-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+      id: 'prod1',
+      name: 'Classic Burger',
+      price: 1200,
+      imageUrl: 'https://example.com/burger1.jpg',
+      description:
+        'ジューシーなビーフパティにフレッシュな野菜をたっぷり挟んだクラシックバーガー',
+      isAvailable: true,
+      createdAt: new Date('2024-01-01'),
     },
     {
-      id: '22222222-2222-2222-2222-222222222222',
-      email: 'jane@example.com',
-      name: 'Jane Smith',
-      avatar:
-        'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-      createdAt: new Date('2024-01-02T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+      id: 'prod2',
+      name: 'Cheeseburger',
+      price: 1400,
+      imageUrl: 'https://example.com/burger2.jpg',
+      description: 'とろけるチーズがたまらないチーズバーガー',
+      isAvailable: true,
+      createdAt: new Date('2024-01-02'),
     },
     {
-      id: '33333333-3333-3333-3333-333333333333',
-      email: 'bob@example.com',
-      name: 'Bob Johnson',
-      avatar:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      createdAt: new Date('2024-01-03T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-03T00:00:00.000Z'),
+      id: 'prod3',
+      name: 'Fish Burger',
+      price: 1300,
+      imageUrl: 'https://example.com/burger3.jpg',
+      description: 'サクサクの白身魚フライと特製タルタルソースのハーモニー',
+      isAvailable: true,
+      createdAt: new Date('2024-01-03'),
     },
     {
-      id: '44444444-4444-4444-4444-444444444444',
-      email: 'alice@example.com',
-      name: 'Alice Brown',
-      avatar:
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-      createdAt: new Date('2024-01-04T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-04T00:00:00.000Z'),
+      id: 'prod4',
+      name: 'Veggie Burger',
+      price: 1100,
+      imageUrl: 'https://example.com/burger4.jpg',
+      description: '野菜たっぷりヘルシーなベジタリアンバーガー',
+      isAvailable: false,
+      createdAt: new Date('2024-01-04'),
     },
     {
-      id: '55555555-5555-5555-5555-555555555555',
-      email: 'charlie@example.com',
-      name: 'Charlie Wilson',
-      avatar:
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      createdAt: new Date('2024-01-05T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-05T00:00:00.000Z'),
+      id: 'prod5',
+      name: 'BBQ Bacon Burger',
+      price: 1600,
+      imageUrl: 'https://example.com/burger5.jpg',
+      description: 'スモーキーなBBQソースとクリスピーベーコンの贅沢バーガー',
+      isAvailable: true,
+      createdAt: new Date('2024-01-05'),
+    },
+    {
+      id: 'prod6',
+      name: 'Double Cheeseburger',
+      price: 1800,
+      imageUrl: 'https://example.com/burger6.jpg',
+      description: 'ダブルパティとダブルチーズの満足感抜群バーガー',
+      isAvailable: true,
+      createdAt: new Date('2024-01-06'),
+    },
+    {
+      id: 'prod7',
+      name: 'Spicy Chicken Burger',
+      price: 1350,
+      imageUrl: 'https://example.com/burger7.jpg',
+      description: 'ピリ辛チキンパティとクールなマヨネーズの絶妙なバランス',
+      isAvailable: true,
+      createdAt: new Date('2024-01-07'),
+    },
+    {
+      id: 'prod8',
+      name: 'Mushroom Swiss Burger',
+      price: 1500,
+      imageUrl: 'https://example.com/burger8.jpg',
+      description: 'ソテーしたマッシュルームとスイスチーズの上品な味わい',
+      isAvailable: false,
+      createdAt: new Date('2024-01-08'),
     },
   ];
 
-  let upsertedCount = 0;
-  for (const user of userData) {
-    await prisma.user.upsert({
-      where: { id: user.id },
+  let productUpsertedCount = 0;
+  for (const product of productData) {
+    await prisma.product.upsert({
+      where: { id: product.id },
       update: {
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        updatedAt: new Date(),
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        description: product.description,
+        isAvailable: product.isAvailable,
       },
-      create: user,
+      create: product,
     });
-    upsertedCount++;
+    productUpsertedCount++;
   }
 
-  console.log(`Upserted ${upsertedCount} users`);
+  console.log(`✓ Upserted ${productUpsertedCount} products`);
 }
 
 main()
