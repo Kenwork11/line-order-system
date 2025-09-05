@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-client';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { products } from '@prisma/client';
 
