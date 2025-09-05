@@ -7,70 +7,76 @@ async function main() {
   console.log(`Environment: ${environment}`);
   console.log('Seeding database...');
 
-  const userData = [
+  const productData = [
     {
       id: '11111111-1111-1111-1111-111111111111',
-      email: 'john@example.com',
-      name: 'John Doe',
-      avatar:
-        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-      createdAt: new Date('2024-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
+      name: 'ハンバーガー',
+      price: 500,
+      image_url:
+        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300',
+      description: '定番のハンバーガーです',
+      is_available: true,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     },
     {
       id: '22222222-2222-2222-2222-222222222222',
-      email: 'jane@example.com',
-      name: 'Jane Smith',
-      avatar:
-        'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-      createdAt: new Date('2024-01-02T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+      name: 'チーズバーガー',
+      price: 600,
+      image_url:
+        'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=300',
+      description: 'チーズが入ったハンバーガーです',
+      is_available: true,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     },
     {
       id: '33333333-3333-3333-3333-333333333333',
-      email: 'bob@example.com',
-      name: 'Bob Johnson',
-      avatar:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      createdAt: new Date('2024-01-03T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-03T00:00:00.000Z'),
+      name: 'フライドポテト',
+      price: 300,
+      image_url:
+        'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300',
+      description: 'サクサクのフライドポテトです',
+      is_available: true,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     },
     {
       id: '44444444-4444-4444-4444-444444444444',
-      email: 'alice@example.com',
-      name: 'Alice Brown',
-      avatar:
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-      createdAt: new Date('2024-01-04T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-04T00:00:00.000Z'),
+      name: 'コーラ',
+      price: 200,
+      image_url:
+        'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=300',
+      description: '冷たいコーラです',
+      is_available: true,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     },
     {
       id: '55555555-5555-5555-5555-555555555555',
-      email: 'charlie@example.com',
-      name: 'Charlie Wilson',
-      avatar:
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      createdAt: new Date('2024-01-05T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-05T00:00:00.000Z'),
+      name: 'アイスクリーム',
+      price: 250,
+      image_url:
+        'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=300',
+      description: 'バニラアイスクリームです',
+      is_available: true,
+      created_at: new Date('2024-01-01T00:00:00.000Z'),
     },
   ];
 
   let upsertedCount = 0;
-  for (const user of userData) {
-    await prisma.user.upsert({
-      where: { id: user.id },
+  for (const product of productData) {
+    await prisma.products.upsert({
+      where: { id: product.id },
       update: {
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        updatedAt: new Date(),
+        name: product.name,
+        price: product.price,
+        image_url: product.image_url,
+        description: product.description,
+        is_available: product.is_available,
       },
-      create: user,
+      create: product,
     });
     upsertedCount++;
   }
 
-  console.log(`Upserted ${upsertedCount} users`);
+  console.log(`Upserted ${upsertedCount} products`);
 }
 
 main()
