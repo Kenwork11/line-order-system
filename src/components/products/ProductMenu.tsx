@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ProductCard } from '@/components/customer/ProductCard';
-import { Database } from '@/types/database';
+import { products } from '@prisma/client';
 
-type Product = Database['public']['Tables']['products']['Row'];
+type Product = products;
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);

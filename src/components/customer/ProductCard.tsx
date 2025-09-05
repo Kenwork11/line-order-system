@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { Database } from '@/types/database';
+import { products } from '@prisma/client';
 
-type Product = Database['public']['Tables']['products']['Row'];
+type Product = products;
 
 interface ProductCardProps {
   product: Product;
