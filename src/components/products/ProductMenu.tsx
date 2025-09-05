@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase-client';
-import { ProductCard } from '@/components/customer/ProductCard';
+import { ProductCard } from '@/components/products/ProductCard';
 import { products } from '@prisma/client';
 
 type Product = products;
