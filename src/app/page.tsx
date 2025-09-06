@@ -6,7 +6,6 @@
 
 import Image from 'next/image';
 import ThemeToggle from '@/components/ThemeToggle';
-import UsersList from '@/components/UsersList';
 import {
   Card,
   CardDescription,
@@ -119,8 +118,13 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* ユーザー一覧デモ（API連携の実例） */}
-        <UsersList />
+        {/* API連携デモの準備中 */}
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-bold mb-4">API Demo</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            API integration demo will be available soon.
+          </p>
+        </div>
       </main>
     </div>
   );
