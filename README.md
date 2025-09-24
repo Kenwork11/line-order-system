@@ -284,6 +284,12 @@ DIRECT_URL=your-postgres-direct-connection-string
 NODE_ENV=production
 ```
 
+### SUPABASE_SERVICE_KEY
+
+Supabase Dashboard → Project Settings → API → service_role キーをコピーして設定
+**重要**:
+このキーはサーバーサイド専用です。クライアント側では使用しないでください。
+
 **注意:**
 
 - `DIRECT_URL`はPrismaマイグレーションで使用
