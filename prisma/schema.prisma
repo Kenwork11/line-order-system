@@ -27,3 +27,20 @@ model User {
   @@index([email], map: "idx_users_email")
   @@map("users")
 }
+
+// Products table - for product listing functionality
+model Product {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  price       Int      // 価格は円単位で保存
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  category    String?  @db.VarChar(100)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([category], map: "idx_products_category")
+  @@index([isActive], map: "idx_products_is_active")
+  @@map("products")
+}
