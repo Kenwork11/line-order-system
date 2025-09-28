@@ -45,9 +45,6 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // リダイレクト処理を一時的に簡素化
-  console.log('Middleware:', { pathname, hasSession: !!session });
-
   // 保護されたルートへの未認証アクセスのみ制御
   if (isProtectedRoute && !session) {
     return NextResponse.redirect(new URL('/login', request.url));

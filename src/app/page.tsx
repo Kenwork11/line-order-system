@@ -14,7 +14,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('Home page redirect logic:', { isAuthenticated });
       if (isAuthenticated) {
         router.push('/dashboard');
       } else {
