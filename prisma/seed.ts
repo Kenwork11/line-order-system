@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { seedProducts } from './seeds/products';
 
 const prisma = new PrismaClient();
 
@@ -71,6 +72,8 @@ async function main() {
   }
 
   console.log(`Upserted ${upsertedCount} users`);
+
+  await seedProducts(prisma);
 }
 
 main()

@@ -64,3 +64,16 @@ export interface BaseEntity {
   createdAt: Date; // 作成日時
   updatedAt: Date; // 最終更新日時
 }
+
+/**
+ * 商品情報を表すインターフェース
+ * 商品管理やメニュー表示で使用されます
+ */
+export interface Product extends BaseEntity {
+  name: string; // 商品名
+  description: string | null; // 商品説明
+  price: number; // 価格（円単位）
+  imageUrl: string | null; // 商品画像URL
+  category: string | null; // カテゴリ
+  isActive: boolean; // 販売状態フラグ
+}
