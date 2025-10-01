@@ -46,31 +46,18 @@ export async function POST(request: NextRequest) {
         where: { productId },
       });
 
-      if (existingCartItem) {
-        // 既存のアイテムがあれば数量を増分更新
-        return await tx.cartItem.update({
-          where: { id: existingCartItem.id },
-          data: {
-            quantity: {
-              increment: quantity,
-            },
-          },
-          include: {
-            product: true,
-          },
-        });
-      } else {
-        // 新規にカートアイテムを作成
-        return await tx.cartItem.create({
-          data: {
-            productId,
-            quantity,
-          },
-          include: {
-            product: true,
-          },
-        });
-      }
+      const data = existingCartItem
+        ? { quantity: { increment: quantity } }
+        : { productId, quantity };
+
+      return await tx.cartItem.upsert({
+        where: { id: existingCartItem?.id ?? 0 },
+        update: data,
+        create: data as { productId: string; quantity: number },
+        include: {
+          product: true,
+        },
+      });
     });
 
     return NextResponse.json(cartItem, { status: 201 });
