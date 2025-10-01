@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// TODO: LINE連携実装後、user_idまたはline_user_idを追加してカートをユーザーごとに管理する
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
