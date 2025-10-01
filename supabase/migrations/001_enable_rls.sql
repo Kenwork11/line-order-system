@@ -35,7 +35,7 @@ BEGIN
   -- ユーザープロフィールを自動作成
   INSERT INTO users (id, email, name, avatar)
   VALUES (
-    NEW.id,
+    NEW.id::uuid,
     NEW.email,
     COALESCE(
       NEW.raw_user_meta_data ->> 'name',
@@ -48,6 +48,10 @@ BEGIN
 EXCEPTION
   -- 既存ユーザーの場合は無視（重複エラーを防ぐ）
   WHEN unique_violation THEN
+    RETURN NEW;
+  WHEN OTHERS THEN
+    -- その他のエラーもログに記録して続行
+    RAISE WARNING 'Error creating user profile for %: %', NEW.email, SQLERRM;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

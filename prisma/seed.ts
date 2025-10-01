@@ -1,4 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
+import { PrismaClient } from '@prisma/client';
+import { seedProducts } from './seeds/products';
+
+const prisma = new PrismaClient();
 
 // Supabase Admin Client (Service Role)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -124,9 +128,16 @@ async function main() {
   console.log(`📊 New users created: ${createdCount}`);
   console.log(`🔑 All users have password: password123`);
   console.log(`📝 User profiles are auto-managed by database triggers`);
+
+  await seedProducts(prisma);
 }
 
-main().catch((e) => {
-  console.error('Seed script failed:', e);
-  process.exit(1);
-});
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error('Seed script failed:', e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
