@@ -38,36 +38,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 同じ商品がカートに既に存在するかチェック
-    const existingCartItem = await prisma.cartItem.findFirst({
-      where: { productId },
+    // トランザクションを使って競合状態を防ぐ
+    const cartItem = await prisma.$transaction(async (tx) => {
+      const existingCartItem = await tx.cartItem.findFirst({
+        where: { productId },
+      });
+
+      if (existingCartItem) {
+        // 既存のアイテムがあれば数量を増分更新
+        return await tx.cartItem.update({
+          where: { id: existingCartItem.id },
+          data: {
+            quantity: {
+              increment: quantity,
+            },
+          },
+          include: {
+            product: true,
+          },
+        });
+      } else {
+        // 新規にカートアイテムを作成
+        return await tx.cartItem.create({
+          data: {
+            productId,
+            quantity,
+          },
+          include: {
+            product: true,
+          },
+        });
+      }
     });
-
-    let cartItem;
-
-    if (existingCartItem) {
-      // 既存のアイテムがあれば数量を更新
-      cartItem = await prisma.cartItem.update({
-        where: { id: existingCartItem.id },
-        data: {
-          quantity: existingCartItem.quantity + quantity,
-        },
-        include: {
-          product: true,
-        },
-      });
-    } else {
-      // 新規にカートアイテムを作成
-      cartItem = await prisma.cartItem.create({
-        data: {
-          productId,
-          quantity,
-        },
-        include: {
-          product: true,
-        },
-      });
-    }
 
     return NextResponse.json(cartItem, { status: 201 });
   } catch (error) {
