@@ -1,77 +1,133 @@
+import { createClient } from '@supabase/supabase-js';
 import { PrismaClient } from '@prisma/client';
 import { seedProducts } from './seeds/products';
 
 const prisma = new PrismaClient();
 
+// Supabase Admin Client (Service Role)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || '';
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
 async function main() {
   const environment = process.env.NODE_ENV || 'development';
   console.log(`Environment: ${environment}`);
-  console.log('Seeding database...');
+  console.log('Creating test authentication users...');
+  console.log('Note: User profiles will be auto-created by database triggers.');
 
-  const userData = [
+  const testUsers = [
     {
-      id: '11111111-1111-1111-1111-111111111111',
+      email: 'admin@example.com',
+      password: 'password123',
+      name: '管理者ユーザー',
+      avatar:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    },
+    {
       email: 'john@example.com',
+      password: 'password123',
       name: 'John Doe',
       avatar:
         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-      createdAt: new Date('2024-01-01T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-01T00:00:00.000Z'),
     },
     {
-      id: '22222222-2222-2222-2222-222222222222',
       email: 'jane@example.com',
+      password: 'password123',
       name: 'Jane Smith',
       avatar:
         'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-      createdAt: new Date('2024-01-02T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
     },
     {
-      id: '33333333-3333-3333-3333-333333333333',
       email: 'bob@example.com',
+      password: 'password123',
       name: 'Bob Johnson',
       avatar:
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      createdAt: new Date('2024-01-03T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-03T00:00:00.000Z'),
     },
     {
-      id: '44444444-4444-4444-4444-444444444444',
       email: 'alice@example.com',
+      password: 'password123',
       name: 'Alice Brown',
       avatar:
         'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-      createdAt: new Date('2024-01-04T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-04T00:00:00.000Z'),
-    },
-    {
-      id: '55555555-5555-5555-5555-555555555555',
-      email: 'charlie@example.com',
-      name: 'Charlie Wilson',
-      avatar:
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-      createdAt: new Date('2024-01-05T00:00:00.000Z'),
-      updatedAt: new Date('2024-01-05T00:00:00.000Z'),
     },
   ];
 
-  let upsertedCount = 0;
-  for (const user of userData) {
-    await prisma.user.upsert({
-      where: { id: user.id },
-      update: {
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        updatedAt: new Date(),
-      },
-      create: user,
-    });
-    upsertedCount++;
+  let createdCount = 0;
+
+  for (const user of testUsers) {
+    try {
+      console.log(`Processing user: ${user.email}`);
+
+      // 既存のAuthユーザーを確認
+      const { data: existingUsers, error: listError } =
+        await supabaseAdmin.auth.admin.listUsers();
+
+      if (listError) {
+        console.error(`Error listing users:`, listError);
+        continue;
+      }
+
+      const existingAuthUser = existingUsers.users.find(
+        (u) => u.email === user.email
+      );
+
+      if (existingAuthUser) {
+        console.log(`✅ Auth user already exists: ${user.email}`);
+
+        // 既存ユーザーのパスワードとメタデータを更新
+        const { error: updateError } =
+          await supabaseAdmin.auth.admin.updateUserById(existingAuthUser.id, {
+            password: user.password,
+            user_metadata: {
+              name: user.name,
+              avatar_url: user.avatar,
+            },
+          });
+
+        if (updateError) {
+          console.error(`Error updating ${user.email}:`, updateError);
+        } else {
+          console.log(`✅ Updated metadata for: ${user.email}`);
+        }
+      } else {
+        // 新しいAuthユーザーを作成
+        // プロフィールは自動的にトリガーで作成される
+        console.log(`Creating new auth user: ${user.email}`);
+        const { error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: user.email,
+          password: user.password,
+          email_confirm: true,
+          user_metadata: {
+            name: user.name,
+            avatar_url: user.avatar,
+          },
+        });
+
+        if (authError) {
+          console.error(`Auth creation error for ${user.email}:`, authError);
+          continue;
+        }
+
+        createdCount++;
+        console.log(`✅ Auth user created: ${user.email}`);
+        console.log(`✅ Profile auto-created by trigger for: ${user.email}`);
+      }
+    } catch (error) {
+      console.error(`Error processing user ${user.email}:`, error);
+    }
   }
 
-  console.log(`Upserted ${upsertedCount} users`);
+  console.log(`\n🎉 Successfully processed test users!`);
+  console.log(`📊 New users created: ${createdCount}`);
+  console.log(`🔑 All users have password: password123`);
+  console.log(`📝 User profiles are auto-managed by database triggers`);
 
   await seedProducts(prisma);
 }
@@ -81,7 +137,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e);
+    console.error('Seed script failed:', e);
     await prisma.$disconnect();
     process.exit(1);
   });

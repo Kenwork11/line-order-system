@@ -267,6 +267,12 @@ Pull Request作成時に以下が自動実行されます：
 
 ### 環境変数設定
 
+# SUPABASE_SERVICE_KEY
+
+Supabase Dashboard → Project Settings → API → service_role キーをコピーして設定
+**重要**:
+このキーは.envで管理してprocess.envで使用するように
+
 Vercelダッシュボードで以下の環境変数を設定：
 
 **必須環境変数:**
