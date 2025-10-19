@@ -49,7 +49,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [
     '/dashboard',
     '/orders',
-    '/menu',
+    '/products',
     '/customers',
     '/analytics',
     '/settings',
