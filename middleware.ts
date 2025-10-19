@@ -39,8 +39,21 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // 認証が必要なルート
-  const protectedRoutes = ['/dashboard'];
+  // 認証ページは保護しない
+  const publicPaths = ['/login', '/register', '/forgot-password'];
+  if (publicPaths.includes(pathname)) {
+    return response;
+  }
+
+  // 認証が必要なルート（店舗管理画面）
+  const protectedRoutes = [
+    '/dashboard',
+    '/orders',
+    '/menu',
+    '/customers',
+    '/analytics',
+    '/settings',
+  ];
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
   );

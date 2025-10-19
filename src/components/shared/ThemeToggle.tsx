@@ -8,16 +8,16 @@
 
 import { useEffect } from 'react';
 import { useAppStore } from '@/store';
-import Button from './ui/Button';
+import Button from '@/components/ui/Button';
 
 /**
  * テーマ切り替えボタン
- * 
+ *
  * 機能:
  * - 現在のテーマに応じたアイコン表示（🌙/☀️）
  * - クリックでテーマ切り替え
  * - HTML要素のクラス名を動的に変更してテーマを適用
- * 
+ *
  * @returns テーマ切り替えボタンのJSX要素
  */
 export default function ThemeToggle() {
@@ -30,10 +30,10 @@ export default function ThemeToggle() {
    */
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     // 既存のテーマクラスを削除
     root.classList.remove('light', 'dark');
-    
+
     // 新しいテーマクラスを追加
     root.classList.add(theme);
   }, [theme]); // themeが変更された時に実行
