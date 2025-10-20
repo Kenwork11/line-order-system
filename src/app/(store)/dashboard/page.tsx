@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useAppStore } from '@/store';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/store/Sidebar';
 import {
   Card,
   CardHeader,

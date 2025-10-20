@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Product } from '@/types';
+import Image from 'next/image';
 
-export default function ProductsPage() {
+export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,11 +12,7 @@ export default function ProductsPage() {
 
   const categories = ['バーガー', 'サイド', '飲み物'];
 
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const url = selectedCategory
@@ -37,7 +34,11 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const formatPrice = (price: number) => {
     return `¥${price.toLocaleString()}`;
@@ -124,15 +125,17 @@ export default function ProductsPage() {
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
             >
               {/* 商品画像 */}
-              <div className="aspect-w-16 aspect-h-9 bg-gray-200">
+              <div className="relative w-full h-48 bg-gray-200">
                 {product.imageUrl ? (
-                  <img
+                  <Image
                     src={product.imageUrl}
                     alt={product.name}
-                    className="w-full h-48 object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
                 ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center">
                     <span className="text-gray-400">画像なし</span>
                   </div>
                 )}

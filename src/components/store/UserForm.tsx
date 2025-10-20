@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/utils/api';
 import type { User } from '@/types';
-import Button from './ui/Button';
+import Button from '@/components/ui/Button';
 
 interface UserFormProps {
   user?: User;

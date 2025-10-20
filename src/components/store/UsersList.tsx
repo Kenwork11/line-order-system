@@ -10,9 +10,9 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { api } from '@/utils/api';
 import type { User, PaginatedResponse } from '@/types';
-import Button from './ui/Button';
-import UserForm from './UserForm';
-import DeleteConfirmModal from './DeleteConfirmModal';
+import Button from '@/components/ui/Button';
+import UserForm from '@/components/store/UserForm';
+import DeleteConfirmModal from '@/components/store/DeleteConfirmModal';
 
 /**
  * ユーザー一覧表示コンポーネント
