@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const customerId = cookieStore.get('line_customer_id')?.value;
 
   if (!customerId) {
