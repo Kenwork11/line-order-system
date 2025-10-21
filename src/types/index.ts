@@ -77,3 +77,6 @@ export interface Product extends BaseEntity {
   category: string | null; // カテゴリ
   isActive: boolean; // 販売状態フラグ
 }
+
+// Customer型のエクスポート
+export type { Customer } from './customer';

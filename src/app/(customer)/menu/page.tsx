@@ -1,10 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Product } from '@/types';
+import { useRouter } from 'next/navigation';
+import liff from '@line/liff';
+import { Product, Customer } from '@/types';
 import Image from 'next/image';
 
+const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID!;
+
 export default function MenuPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [customer, setCustomer] = useState<Customer | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +19,77 @@ export default function MenuPage() {
 
   const categories = ['バーガー', 'サイド', '飲み物'];
 
+  // ========================================
+  // LIFF初期化 + 認証
+  // ========================================
+  useEffect(() => {
+    initializeLiff();
+  }, []);
+
+  const initializeLiff = async () => {
+    try {
+      console.log('LIFF初期化開始...');
+
+      // 1. LIFF初期化
+      await liff.init({ liffId: LIFF_ID });
+      console.log('LIFF初期化完了');
+
+      // 2. ログイン状態チェック
+      if (!liff.isLoggedIn()) {
+        console.log('未ログイン → ログイン画面へ');
+        liff.login();
+        return;
+      }
+
+      console.log('ログイン済み');
+
+      // 3. IDトークン取得
+      const idToken = liff.getIDToken();
+      if (!idToken) {
+        throw new Error('IDトークンの取得に失敗しました');
+      }
+
+      console.log('IDトークン取得成功');
+
+      // 4. サーバー側で認証
+      await authenticateWithServer(idToken);
+    } catch (error) {
+      console.error('LIFF初期化エラー:', error);
+      setError('LIFFの初期化に失敗しました');
+      setLoading(false);
+    }
+  };
+
+  const authenticateWithServer = async (idToken: string) => {
+    try {
+      console.log('サーバー認証開始...');
+
+      const response = await fetch('/api/auth/liff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '認証に失敗しました');
+      }
+
+      const customerData = await response.json();
+      console.log('認証成功:', customerData);
+
+      setCustomer(customerData);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('サーバー認証エラー:', error);
+      setError('認証に失敗しました');
+      setLoading(false);
+    }
+  };
+
+  // ========================================
+  // 商品取得
+  // ========================================
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -37,39 +115,55 @@ export default function MenuPage() {
   }, [selectedCategory]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (isAuthenticated) {
+      fetchProducts();
+    }
+  }, [selectedCategory, isAuthenticated, fetchProducts]);
 
   const formatPrice = (price: number) => {
     return `¥${price.toLocaleString()}`;
   };
 
-  if (loading) {
+  // ========================================
+  // ログアウト
+  // ========================================
+  const handleLogout = () => {
+    if (liff.isLoggedIn()) {
+      liff.logout();
+      window.location.reload();
+    }
+  };
+
+  // ========================================
+  // エラー表示
+  // ========================================
+  if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">商品を読み込み中...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">エラー</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            再試行
+          </button>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  // ========================================
+  // ローディング表示
+  // ========================================
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-red-600 text-lg">{error}</p>
-            <button
-              onClick={fetchProducts}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            >
-              再試行
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">認証中...</p>
         </div>
       </div>
     );
@@ -78,14 +172,41 @@ export default function MenuPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* ヘッダー */}
+        {/* ヘッダー（顧客情報） */}
+        {customer && (
+          <div className="mb-6 flex items-center justify-between bg-white rounded-lg shadow-sm p-4">
+            <div className="flex items-center space-x-3">
+              {customer.pictureUrl && (
+                <Image
+                  src={customer.pictureUrl}
+                  alt={customer.displayName}
+                  width={40}
+                  height={40}
+                  className="rounded-full border-2 border-green-500"
+                />
+              )}
+              <div>
+                <p className="text-sm text-gray-500">ようこそ</p>
+                <p className="text-base font-semibold text-gray-900">
+                  {customer.displayName}さん
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              ログアウト
+            </button>
+          </div>
+        )}
+
+        {/* タイトル */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             🍔 ハンバーガーショップメニュー
           </h1>
-          <p className="text-lg text-gray-600">
-            新鮮な食材で作った美味しいハンバーガーをお楽しみください
-          </p>
+          <p className="text-gray-600">お好きな商品をお選びください</p>
         </div>
 
         {/* カテゴリフィルター */}
