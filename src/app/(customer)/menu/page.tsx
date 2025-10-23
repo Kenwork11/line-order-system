@@ -28,20 +28,25 @@ export default function MenuPage() {
 
   const initializeLiff = async () => {
     try {
-      console.log('LIFF初期化開始...');
+      console.log('[DEBUG] LIFF初期化開始...', { LIFF_ID });
+
+      // 環境変数チェック
+      if (!LIFF_ID) {
+        throw new Error('LIFF_IDが設定されていません');
+      }
 
       // 1. LIFF初期化
       await liff.init({ liffId: LIFF_ID });
-      console.log('LIFF初期化完了');
+      console.log('[DEBUG] LIFF初期化完了');
 
       // 2. ログイン状態チェック
       if (!liff.isLoggedIn()) {
-        console.log('未ログイン → ログイン画面へ');
+        console.log('[DEBUG] 未ログイン → ログイン画面へ');
         liff.login();
         return;
       }
 
-      console.log('ログイン済み');
+      console.log('[DEBUG] ログイン済み');
 
       // 3. IDトークン取得
       const idToken = liff.getIDToken();
@@ -49,20 +54,25 @@ export default function MenuPage() {
         throw new Error('IDトークンの取得に失敗しました');
       }
 
-      console.log('IDトークン取得成功');
+      console.log('[DEBUG] IDトークン取得成功');
 
       // 4. サーバー側で認証
       await authenticateWithServer(idToken);
     } catch (error) {
-      console.error('LIFF初期化エラー:', error);
-      setError('LIFFの初期化に失敗しました');
+      console.error('[ERROR] LIFF初期化エラー:', error);
+      setError(
+        `LIFFの初期化に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`
+      );
       setLoading(false);
     }
   };
 
   const authenticateWithServer = async (idToken: string) => {
     try {
-      console.log('サーバー認証開始...');
+      console.log('[DEBUG] サーバー認証開始...', {
+        idTokenLength: idToken?.length,
+        apiUrl: '/api/auth/liff',
+      });
 
       const response = await fetch('/api/auth/liff', {
         method: 'POST',
@@ -70,19 +80,28 @@ export default function MenuPage() {
         body: JSON.stringify({ idToken }),
       });
 
+      console.log('[DEBUG] サーバーレスポンス:', {
+        status: response.status,
+        ok: response.ok,
+      });
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('[ERROR] 認証API失敗:', errorData);
         throw new Error(errorData.error || '認証に失敗しました');
       }
 
       const customerData = await response.json();
-      console.log('認証成功:', customerData);
+      console.log('[DEBUG] 認証成功:', customerData);
 
       setCustomer(customerData);
       setIsAuthenticated(true);
+      setLoading(false);
     } catch (error) {
-      console.error('サーバー認証エラー:', error);
-      setError('認証に失敗しました');
+      console.error('[ERROR] サーバー認証エラー:', error);
+      setError(
+        `認証に失敗しました: ${error instanceof Error ? error.message : '不明なエラー'}`
+      );
       setLoading(false);
     }
   };
