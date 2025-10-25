@@ -18,29 +18,29 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // カートアイテムの存在確認と所有権チェック
-    const existingCartItem = await prisma.cartItem.findUnique({
-      where: { id },
+    // 削除（所有権チェック付き）
+    await prisma.cartItem.delete({
+      where: {
+        id,
+        customerId, // 自分のカートアイテムのみ削除可能
+      },
     });
 
-    if (!existingCartItem) {
+    return NextResponse.json({ message: 'Deleted successfully' });
+  } catch (error) {
+    // Prisma error: レコードが見つからない（存在しないor他人のカート）
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'P2025'
+    ) {
       return NextResponse.json(
         { error: 'Cart item not found' },
         { status: 404 }
       );
     }
 
-    if (existingCartItem.customerId !== customerId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    // 削除
-    await prisma.cartItem.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: 'Deleted successfully' });
-  } catch (error) {
     console.error('カート削除エラー:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
