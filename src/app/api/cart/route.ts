@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { formatCartItemForResponse } from '@/lib/cart-utils';
 
 const DEFAULT_QUANTITY = 1;
 
@@ -23,19 +24,7 @@ export async function GET(request: NextRequest) {
     });
 
     // レスポンス整形
-    const formattedItems = cartItems.map((item) => ({
-      id: item.id,
-      productId: item.product.id,
-      productName: item.product.name,
-      productDescription: item.product.description,
-      productImageUrl: item.product.imageUrl,
-      productCategory: item.product.category,
-      price: item.product.price, // 常に最新価格
-      quantity: item.quantity,
-      subtotal: item.product.price * item.quantity,
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
-    }));
+    const formattedItems = cartItems.map(formatCartItemForResponse);
 
     const totalAmount = formattedItems.reduce(
       (sum, item) => sum + item.subtotal,
@@ -136,17 +125,9 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(
-      {
-        id: cartItem.id,
-        productId: cartItem.product.id,
-        productName: cartItem.product.name,
-        price: cartItem.product.price,
-        quantity: cartItem.quantity,
-        subtotal: cartItem.product.price * cartItem.quantity,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(formatCartItemForResponse(cartItem), {
+      status: 201,
+    });
   } catch (error) {
     console.error('カート追加エラー:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
