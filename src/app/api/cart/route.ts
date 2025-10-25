@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(formatCartItemForResponse(cartItem), {
-      status: 201,
+      status: 200,
     });
   } catch (error) {
     console.error('カート追加エラー:', error);
