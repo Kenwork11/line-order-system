@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { COOKIE_NAMES } from '@/lib/constants';
+import { updateCartItemSchema } from '@/lib/validations/cart';
 
 // PATCH /api/cart/[id] - カートアイテムの数量を変更
 export async function PATCH(
@@ -18,15 +19,18 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { quantity } = body;
 
     // バリデーション
-    if (typeof quantity !== 'number' || quantity < 1) {
+    const validationResult = updateCartItemSchema.safeParse(body);
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Quantity must be a positive number' },
+        { error: validationResult.error.format() },
         { status: 400 }
       );
     }
+
+    const { quantity } = validationResult.data;
 
     // カートアイテムの存在確認と所有権チェック
     const existingCartItem = await prisma.cartItem.findUnique({
