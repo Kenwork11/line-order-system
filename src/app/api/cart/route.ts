@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { formatCartItemForResponse } from '@/lib/cart-utils';
-
-const DEFAULT_QUANTITY = 1;
+import { COOKIE_NAMES } from '@/lib/constants';
+import { upsertCartItemSchema } from '@/lib/validations/cart';
 
 // GET /api/cart - カート内容を取得
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
-  const customerId = cookieStore.get('line_customer_id')?.value;
+  const customerId = cookieStore.get(COOKIE_NAMES.LINE_CUSTOMER_ID)?.value;
 
   if (!customerId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,10 +42,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/cart - 商品をカートに追加
+// POST /api/cart - 商品をカートに追加・更新（upsert）
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const customerId = cookieStore.get('line_customer_id')?.value;
+  const customerId = cookieStore.get(COOKIE_NAMES.LINE_CUSTOMER_ID)?.value;
 
   if (!customerId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,22 +53,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { productId, quantity = DEFAULT_QUANTITY } = body;
 
-    // バリデーション
-    if (!productId) {
+    // Zodバリデーション
+    const validationResult = upsertCartItemSchema.safeParse(body);
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Product ID is required' },
+        { error: validationResult.error.format() },
         { status: 400 }
       );
     }
 
-    if (typeof quantity !== 'number' || quantity < 1) {
-      return NextResponse.json(
-        { error: 'Quantity must be a positive number' },
-        { status: 400 }
-      );
-    }
+    const { productId, quantity } = validationResult.data;
 
     // 商品の存在確認
     const product = await prisma.product.findUnique({
@@ -86,43 +82,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // トランザクションで競合状態を防ぐ
-    const cartItem = await prisma.$transaction(async (tx) => {
-      const existingCartItem = await tx.cartItem.findUnique({
-        where: {
-          customerId_productId: {
-            customerId,
-            productId,
-          },
+    // upsert: 既存データがあれば数量を上書き、なければ新規作成
+    const cartItem = await prisma.cartItem.upsert({
+      where: {
+        customerId_productId: {
+          customerId,
+          productId,
         },
-      });
-
-      if (existingCartItem) {
-        // 既存のアイテムがあれば数量を加算
-        return await tx.cartItem.update({
-          where: { id: existingCartItem.id },
-          data: {
-            quantity: {
-              increment: quantity,
-            },
-          },
-          include: {
-            product: true,
-          },
-        });
-      } else {
-        // 新規にカートアイテムを作成
-        return await tx.cartItem.create({
-          data: {
-            customerId,
-            productId,
-            quantity,
-          },
-          include: {
-            product: true,
-          },
-        });
-      }
+      },
+      update: {
+        quantity, // 上書き（incrementではなくset）
+      },
+      create: {
+        customerId,
+        productId,
+        quantity,
+      },
+      include: {
+        product: true,
+      },
     });
 
     return NextResponse.json(formatCartItemForResponse(cartItem), {
