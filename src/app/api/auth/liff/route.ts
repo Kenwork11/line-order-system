@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 const LINE_LOGIN_CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID!;
 
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
       lastLoginAt: customer.lastLoginAt?.toISOString() || null,
     });
 
-    response.cookies.set('line_customer_id', customer.id, {
+    response.cookies.set(COOKIE_NAMES.LINE_CUSTOMER_ID, customer.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

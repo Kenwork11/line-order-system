@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 // PATCH /api/cart/[id] - カートアイテムの数量を変更
 export async function PATCH(
@@ -8,7 +9,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const cookieStore = await cookies();
-  const customerId = cookieStore.get('line_customer_id')?.value;
+  const customerId = cookieStore.get(COOKIE_NAMES.LINE_CUSTOMER_ID)?.value;
 
   if (!customerId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

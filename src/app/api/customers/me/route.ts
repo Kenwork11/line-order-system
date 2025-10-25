@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
-  const customerId = cookieStore.get('line_customer_id')?.value;
+  const customerId = cookieStore.get(COOKIE_NAMES.LINE_CUSTOMER_ID)?.value;
 
   if (!customerId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
