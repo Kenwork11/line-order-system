@@ -75,10 +75,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
+    // 既存カートアイテムの確認
+    const existingItem = await prisma.cartItem.findUnique({
+      where: {
+        customerId_productId: { customerId, productId },
+      },
+    });
+
+    // 非アクティブ商品の処理
     if (!product.isActive) {
+      // 新規追加の場合: エラー
+      if (!existingItem) {
+        return NextResponse.json(
+          { error: 'Product is not available' },
+          { status: 400 }
+        );
+      }
+
+      // 既存アイテムの更新の場合: 自動削除
+      await prisma.cartItem.delete({
+        where: { id: existingItem.id },
+      });
+
       return NextResponse.json(
-        { error: 'Product is not available' },
-        { status: 400 }
+        {
+          deleted: true,
+          productId,
+          productName: product.name,
+          message: '商品が販売停止になったため、カートから削除されました',
+        },
+        { status: 200 }
       );
     }
 
