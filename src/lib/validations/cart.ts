@@ -5,14 +5,14 @@ import { z } from 'zod';
  */
 export const upsertCartItemSchema = z.object({
   productId: z.string({
-    message: 'Product ID is required',
+    message: '商品IDは必須です',
   }),
   quantity: z
     .number({
-      message: 'Quantity must be a number',
+      message: '数量は数値である必要があります',
     })
-    .int({ message: 'Quantity must be an integer' })
-    .positive({ message: 'Quantity must be a positive number' }),
+    .int({ message: '数量は整数である必要があります' })
+    .positive({ message: '数量は正の数である必要があります' }),
 });
 
 /**
