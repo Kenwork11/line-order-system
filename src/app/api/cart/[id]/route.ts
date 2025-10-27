@@ -29,12 +29,11 @@ export async function DELETE(
     return NextResponse.json({ message: 'Deleted successfully' });
   } catch (error) {
     // Prisma error: レコードが見つからない（存在しないor他人のカート）
-    if (
-      error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      error.code === 'P2025'
-    ) {
+    const ERROR_CODE_NO_DATA = 'P2025';
+    const hasError = error && typeof error === 'object' && 'code' in error;
+    const isNotFoundItem = hasError && error.code === ERROR_CODE_NO_DATA;
+
+    if (isNotFoundItem) {
       return NextResponse.json(
         { error: 'Cart item not found' },
         { status: 404 }
