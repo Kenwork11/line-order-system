@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
       //   pathname: '/images/**',
       // }
     ],
+    // ngrok使用時の画像最適化を無効化
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   // セキュリティヘッダーの設定
