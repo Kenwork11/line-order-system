@@ -57,8 +57,7 @@ export const useProducts = (isAuthenticated: boolean) => {
 
   // 認証後に商品を取得
   useEffect(() => {
-    const shouldFetchProducts = isAuthenticated;
-    if (shouldFetchProducts) {
+    if (isAuthenticated) {
       fetchProducts();
     }
   }, [selectedCategory, isAuthenticated, fetchProducts]);
