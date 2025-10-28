@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 /**
  * ルートページ
- * デフォルトで顧客向けメニューページにリダイレクト
+ * 404を返す
  */
 export default function Home() {
-  redirect('/menu');
+  notFound();
 }
