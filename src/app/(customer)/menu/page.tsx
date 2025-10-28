@@ -16,6 +16,7 @@ export default function MenuPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [addingToCart, setAddingToCart] = useState<string | null>(null); // カートに追加中の商品ID
 
   const categories = ['バーガー', 'サイド', '飲み物'];
 
@@ -122,6 +123,53 @@ export default function MenuPage() {
 
   const formatPrice = (price: number) => {
     return `¥${price.toLocaleString()}`;
+  };
+
+  // ========================================
+  // カートに追加
+  // ========================================
+  const handleAddToCart = async (productId: string) => {
+    // ローディング状態を設定
+    setAddingToCart(productId);
+
+    try {
+      // カートに追加するリクエストボディを構築
+      const addToCartRequest = {
+        productId,
+        quantity: 1,
+      };
+
+      // API呼び出し
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(addToCartRequest),
+      });
+
+      // レスポンスの検証
+      const isSuccess = response.ok;
+      if (!isSuccess) {
+        const errorData = await response.json();
+        const errorMessage = errorData.error || 'カートへの追加に失敗しました';
+        throw new Error(errorMessage);
+      }
+
+      // 成功データの取得
+      const cartItem = await response.json();
+      const productName = cartItem.productName || '商品';
+      const successMessage = `${productName}をカートに追加しました`;
+
+      // 成功フィードバック
+      alert(successMessage);
+    } catch (err) {
+      console.error('カート追加エラー:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : 'カートへの追加に失敗しました';
+      alert(errorMessage);
+    } finally {
+      // ローディング状態をリセット
+      setAddingToCart(null);
+    }
   };
 
   // ========================================
@@ -285,8 +333,12 @@ export default function MenuPage() {
                   <span className="text-xl font-bold text-indigo-600">
                     {formatPrice(product.price)}
                   </span>
-                  <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors">
-                    カートに追加
+                  <button
+                    onClick={() => handleAddToCart(product.id)}
+                    disabled={addingToCart === product.id}
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {addingToCart === product.id ? '追加中...' : 'カートに追加'}
                   </button>
                 </div>
               </div>
