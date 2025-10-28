@@ -1,14 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * カート操作を管理するカスタムフック
  *
+ * @param {boolean} isAuthenticated - 認証済みかどうか
  * @returns {Object} カート操作に関する状態と関数
  * @returns {string | null} addingToCart - カートに追加中の商品ID
+ * @returns {number} cartItemCount - カート内のアイテム数
  * @returns {Function} handleAddToCart - カート追加処理
+ * @returns {Function} refreshCart - カート情報を再取得
  */
-export const useCart = () => {
+export const useCart = (isAuthenticated: boolean) => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [cartItemCount, setCartItemCount] = useState<number>(0);
+
+  /**
+   * カート内のアイテム数を取得
+   */
+  const fetchCartCount = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    try {
+      const response = await fetch('/api/cart');
+
+      if (!response.ok) {
+        throw new Error('カート情報の取得に失敗しました');
+      }
+
+      const data = await response.json();
+      setCartItemCount(data.itemCount || 0);
+    } catch (err) {
+      console.error('カート取得エラー:', err);
+    }
+  }, [isAuthenticated]);
+
+  // 認証後にカート情報を取得
+  useEffect(() => {
+    fetchCartCount();
+  }, [fetchCartCount]);
 
   /**
    * カートに商品を追加する
@@ -48,6 +77,9 @@ export const useCart = () => {
 
       // 成功フィードバック
       alert(successMessage);
+
+      // カート情報を再取得
+      await fetchCartCount();
     } catch (err) {
       console.error('カート追加エラー:', err);
       const errorMessage =
@@ -61,6 +93,8 @@ export const useCart = () => {
 
   return {
     addingToCart,
+    cartItemCount,
     handleAddToCart,
+    refreshCart: fetchCartCount,
   };
 };

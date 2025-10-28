@@ -21,14 +21,14 @@ export default function MenuPage() {
     selectedCategory,
     setSelectedCategory,
   } = useProducts(isAuthenticated);
-  const { addingToCart, handleAddToCart } = useCart();
+  const { addingToCart, cartItemCount, handleAddToCart } =
+    useCart(isAuthenticated);
 
   // カテゴリ一覧
   const categories = ['バーガー', 'サイド', '飲み物'];
 
-  // エラーとローディングの統合
+  // エラー表示用の統合
   const error = authError || productsError;
-  const loading = authLoading || productsLoading;
 
   // 価格フォーマット用のヘルパー関数
   const formatPrice = (price: number) => {
@@ -102,12 +102,28 @@ export default function MenuPage() {
           </div>
         )}
 
-        {/* タイトル */}
-        <div className="text-center mb-12">
+        {/* タイトルとカートボタン */}
+        <div className="text-center mb-12 relative">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             🍔 ハンバーガーショップメニュー
           </h1>
           <p className="text-gray-600">お好きな商品をお選びください</p>
+
+          {/* カートボタン（固定位置） */}
+          <a
+            href="/cart"
+            className="fixed bottom-6 right-6 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50"
+            style={{ width: '60px', height: '60px' }}
+          >
+            <div className="relative">
+              <span className="text-2xl">🛒</span>
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </div>
+          </a>
         </div>
 
         {/* カテゴリフィルター */}
