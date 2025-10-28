@@ -98,6 +98,7 @@ export const useLiffAuth = () => {
       console.error('サーバー認証エラー:', err);
       const errorMessage = '認証に失敗しました';
       setError(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
