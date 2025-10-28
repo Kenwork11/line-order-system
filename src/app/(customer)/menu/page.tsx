@@ -1,185 +1,38 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import liff from '@line/liff';
-import { Product, Customer } from '@/types';
 import Image from 'next/image';
-
-const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID!;
+import { useLiffAuth } from '@/hooks/useLiffAuth';
+import { useProducts } from '@/hooks/useProducts';
+import { useCart } from '@/hooks/useCart';
 
 export default function MenuPage() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [addingToCart, setAddingToCart] = useState<string | null>(null); // カートに追加中の商品ID
+  // カスタムフックで状態管理とロジックを分離
+  const {
+    isAuthenticated,
+    customer,
+    loading: authLoading,
+    error: authError,
+    logout,
+  } = useLiffAuth();
+  const {
+    products,
+    loading: productsLoading,
+    error: productsError,
+    selectedCategory,
+    setSelectedCategory,
+  } = useProducts(isAuthenticated);
+  const { addingToCart, handleAddToCart } = useCart();
 
+  // カテゴリ一覧
   const categories = ['バーガー', 'サイド', '飲み物'];
 
-  // ========================================
-  // LIFF初期化 + 認証
-  // ========================================
-  useEffect(() => {
-    initializeLiff();
-  }, []);
+  // エラーとローディングの統合
+  const error = authError || productsError;
+  const loading = authLoading || productsLoading;
 
-  const initializeLiff = async () => {
-    try {
-      console.log('LIFF初期化開始...');
-
-      // 1. LIFF初期化
-      await liff.init({ liffId: LIFF_ID });
-      console.log('LIFF初期化完了');
-
-      // 2. ログイン状態チェック
-      if (!liff.isLoggedIn()) {
-        console.log('未ログイン → ログイン画面へ');
-        liff.login();
-        return;
-      }
-
-      console.log('ログイン済み');
-
-      // 3. IDトークン取得
-      const idToken = liff.getIDToken();
-      if (!idToken) {
-        throw new Error('IDトークンの取得に失敗しました');
-      }
-
-      console.log('IDトークン取得成功');
-
-      // 4. サーバー側で認証
-      await authenticateWithServer(idToken);
-    } catch (error) {
-      console.error('LIFF初期化エラー:', error);
-      setError('LIFFの初期化に失敗しました');
-      setLoading(false);
-    }
-  };
-
-  const authenticateWithServer = async (idToken: string) => {
-    try {
-      console.log('サーバー認証開始...');
-
-      const response = await fetch('/api/auth/liff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '認証に失敗しました');
-      }
-
-      const customerData = await response.json();
-      console.log('認証成功:', customerData);
-
-      setCustomer(customerData);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('サーバー認証エラー:', error);
-      setError('認証に失敗しました');
-      setLoading(false);
-    }
-  };
-
-  // ========================================
-  // 商品取得
-  // ========================================
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const url = selectedCategory
-        ? `/api/products?category=${encodeURIComponent(selectedCategory)}`
-        : '/api/products';
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error('商品の取得に失敗しました');
-      }
-
-      const data = await response.json();
-      setProducts(data);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : '予期しないエラーが発生しました'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchProducts();
-    }
-  }, [selectedCategory, isAuthenticated, fetchProducts]);
-
+  // 価格フォーマット用のヘルパー関数
   const formatPrice = (price: number) => {
     return `¥${price.toLocaleString()}`;
-  };
-
-  // ========================================
-  // カートに追加
-  // ========================================
-  const handleAddToCart = async (productId: string) => {
-    // ローディング状態を設定
-    setAddingToCart(productId);
-
-    try {
-      // カートに追加するリクエストボディを構築
-      const addToCartRequest = {
-        productId,
-        quantity: 1,
-      };
-
-      // API呼び出し
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addToCartRequest),
-      });
-
-      // レスポンスの検証
-      const isSuccess = response.ok;
-      if (!isSuccess) {
-        const errorData = await response.json();
-        const errorMessage = errorData.error || 'カートへの追加に失敗しました';
-        throw new Error(errorMessage);
-      }
-
-      // 成功データの取得
-      const cartItem = await response.json();
-      const productName = cartItem.productName || '商品';
-      const successMessage = `${productName}をカートに追加しました`;
-
-      // 成功フィードバック
-      alert(successMessage);
-    } catch (err) {
-      console.error('カート追加エラー:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'カートへの追加に失敗しました';
-      alert(errorMessage);
-    } finally {
-      // ローディング状態をリセット
-      setAddingToCart(null);
-    }
-  };
-
-  // ========================================
-  // ログアウト
-  // ========================================
-  const handleLogout = () => {
-    if (liff.isLoggedIn()) {
-      liff.logout();
-      window.location.reload();
-    }
   };
 
   // ========================================
@@ -241,7 +94,7 @@ export default function MenuPage() {
               </div>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               ログアウト
