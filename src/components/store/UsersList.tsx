@@ -203,7 +203,10 @@ export default function UsersList() {
 
       {deletingUser && (
         <DeleteConfirmModal
-          user={deletingUser}
+          title="ユーザーの削除"
+          itemName={deletingUser.name}
+          itemType="ユーザー"
+          apiEndpoint={`/api/users/${deletingUser.id}`}
           onConfirm={handleDeleteConfirm}
           onCancel={handleDeleteCancel}
         />
