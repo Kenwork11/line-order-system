@@ -4,6 +4,7 @@ import { useAppStore } from '@/store';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 interface SidebarProps {
   className?: string;
@@ -12,6 +13,7 @@ interface SidebarProps {
 const Sidebar = ({ className }: SidebarProps) => {
   const { sidebarOpen, setSidebarOpen } = useAppStore();
   const { signOut, user } = useAuth();
+  const pathname = usePathname();
 
   const menuItems = [
     {
@@ -19,42 +21,36 @@ const Sidebar = ({ className }: SidebarProps) => {
       label: 'ダッシュボード',
       icon: '📊',
       href: '/dashboard',
-      active: true,
     },
     {
       id: 'orders',
       label: '注文管理',
       icon: '📋',
-      href: '/dashboard/orders',
-      active: false,
+      href: '/orders',
     },
     {
       id: 'products',
       label: '商品管理',
       icon: '🛍️',
-      href: '/dashboard/products',
-      active: false,
+      href: '/products',
     },
     {
       id: 'customers',
       label: '顧客管理',
       icon: '👥',
-      href: '/dashboard/customers',
-      active: false,
+      href: '/customers',
     },
     {
       id: 'analytics',
       label: 'レポート',
       icon: '📈',
-      href: '/dashboard/analytics',
-      active: false,
+      href: '/analytics',
     },
     {
       id: 'settings',
       label: '設定',
       icon: '⚙️',
-      href: '/dashboard/settings',
-      active: false,
+      href: '/settings',
     },
   ];
 
@@ -114,21 +110,24 @@ const Sidebar = ({ className }: SidebarProps) => {
 
           {/* メニューリスト */}
           <nav className="flex-1 px-4 py-4 space-y-1">
-            {menuItems.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                className={cn(
-                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
-                  item.active
-                    ? 'bg-blue-100 text-blue-900'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                )}
-              >
-                <span className="mr-3 text-lg">{item.icon}</span>
-                {item.label}
-              </a>
-            ))}
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  className={cn(
+                    'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                    isActive
+                      ? 'bg-blue-100 text-blue-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  )}
+                >
+                  <span className="mr-3 text-lg">{item.icon}</span>
+                  {item.label}
+                </a>
+              );
+            })}
           </nav>
 
           {/* ログアウトボタン */}
