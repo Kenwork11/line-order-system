@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import { api } from '@/utils/api';
 import type { Product, ApiResponse } from '@/types';
@@ -29,7 +29,6 @@ import { PRODUCT_CATEGORIES } from '@/lib/validations/product';
 export default function ProductsList() {
   // ===== 状態管理 =====
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -67,9 +66,9 @@ export default function ProductsList() {
   };
 
   /**
-   * フィルタリングと検索を適用
+   * フィルタリングと検索を適用（useMemoで派生状態として計算）
    */
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
     // カテゴリフィルタ
@@ -94,7 +93,7 @@ export default function ProductsList() {
       filtered = filtered.filter((product) => product.isActive);
     }
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [products, selectedCategory, searchQuery, showInactive]);
 
   /**

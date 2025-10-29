@@ -22,6 +22,18 @@ interface ProductFormProps {
 }
 
 /**
+ * 商品データからフォームの初期値を生成
+ */
+const getInitialFormData = (product?: Product): CreateProductInput => ({
+  name: product?.name || '',
+  description: product?.description || '',
+  price: product?.price || 0,
+  imageUrl: product?.imageUrl || '',
+  category: (product?.category as (typeof PRODUCT_CATEGORIES)[number]) || null,
+  isActive: product?.isActive ?? true,
+});
+
+/**
  * 商品フォームコンポーネント
  *
  * 機能:
@@ -37,30 +49,16 @@ export default function ProductForm({
   isEditing,
 }: ProductFormProps) {
   // ===== 状態管理 =====
-  const [formData, setFormData] = useState<CreateProductInput>({
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price || 0,
-    imageUrl: product?.imageUrl || '',
-    category:
-      (product?.category as (typeof PRODUCT_CATEGORIES)[number]) || null,
-    isActive: product?.isActive ?? true,
-  });
+  const [formData, setFormData] = useState<CreateProductInput>(() =>
+    getInitialFormData(product)
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ===== エフェクト =====
   useEffect(() => {
     if (product) {
-      setFormData({
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        imageUrl: product.imageUrl || '',
-        category:
-          (product.category as (typeof PRODUCT_CATEGORIES)[number]) || null,
-        isActive: product.isActive,
-      });
+      setFormData(getInitialFormData(product));
     }
   }, [product]);
 
