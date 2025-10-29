@@ -3,6 +3,62 @@ import { prisma } from '@/lib/prisma';
 
 const LINE_LOGIN_CHANNEL_ID = process.env.LINE_LOGIN_CHANNEL_ID!;
 
+/**
+ * GET: セッション確認
+ * Cookie内のline_customer_idから顧客情報を取得
+ */
+export async function GET(request: NextRequest) {
+  try {
+    // Cookieからline_customer_idを取得
+    const customerId = request.cookies.get('line_customer_id')?.value;
+
+    if (!customerId) {
+      return NextResponse.json(
+        { error: 'セッションが見つかりません' },
+        { status: 401 }
+      );
+    }
+
+    console.log('セッション確認:', customerId);
+
+    // 顧客情報を取得
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+    });
+
+    if (!customer || !customer.isActive) {
+      return NextResponse.json(
+        { error: 'セッションが無効です' },
+        { status: 401 }
+      );
+    }
+
+    console.log('セッション有効:', customer.id);
+
+    // 顧客情報を返す
+    return NextResponse.json({
+      id: customer.id,
+      lineUserId: customer.lineUserId,
+      displayName: customer.displayName,
+      pictureUrl: customer.pictureUrl,
+      nickname: customer.nickname,
+      isActive: customer.isActive,
+      createdAt: customer.createdAt.toISOString(),
+      updatedAt: customer.updatedAt.toISOString(),
+      lastLoginAt: customer.lastLoginAt?.toISOString() || null,
+    });
+  } catch (error) {
+    console.error('セッション確認エラー:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST: IDトークン検証とセッション作成
+ */
 export async function POST(request: NextRequest) {
   try {
     const { idToken } = await request.json();
@@ -70,6 +126,31 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('LIFF認証エラー:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE: ログアウト（セッション削除）
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const customerId = request.cookies.get('line_customer_id')?.value;
+
+    if (customerId) {
+      console.log('ログアウト:', customerId);
+    }
+
+    // Cookieを削除
+    const response = NextResponse.json({ success: true });
+    response.cookies.delete('line_customer_id');
+
+    return response;
+  } catch (error) {
+    console.error('ログアウトエラー:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
