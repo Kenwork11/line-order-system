@@ -111,12 +111,60 @@ export const useCart = (isAuthenticated: boolean) => {
     }
   };
 
+  /**
+   * カートアイテムの数量を更新する
+   *
+   * @param {string} cartItemId - 更新するカートアイテムのID
+   * @param {number} newQuantity - 新しい数量
+   */
+  const handleUpdateQuantity = async (
+    cartItemId: string,
+    newQuantity: number
+  ) => {
+    // 楽観的UI更新
+    const previousCartItems = [...cartItems];
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.id === cartItemId
+            ? {
+                ...item,
+                quantity: newQuantity,
+                subtotal: item.price * newQuantity,
+              }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+
+    try {
+      const response = await fetch(`/api/cart/${cartItemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity }),
+      });
+
+      if (!response.ok) {
+        throw new Error('数量更新に失敗しました');
+      }
+
+      // カート情報を再取得して同期
+      await fetchCartCount();
+    } catch (err) {
+      console.error('数量更新エラー:', err);
+      // エラー時は元に戻す
+      setCartItems(previousCartItems);
+      alert('数量の更新に失敗しました');
+    }
+  };
+
   return {
     addingToCart,
     cartItems,
     cartItemCount,
     loading,
     handleAddToCart,
+    handleUpdateQuantity,
     refreshCart: fetchCartCount,
   };
 };
