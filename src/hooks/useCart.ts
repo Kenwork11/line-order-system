@@ -148,8 +148,18 @@ export const useCart = (isAuthenticated: boolean) => {
         throw new Error('数量更新に失敗しました');
       }
 
-      // カート情報を再取得して同期
-      await fetchCartCount();
+      const data = await response.json();
+
+      if (data.deleted) {
+        // 削除された場合はカートから除外
+        setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+        setCartItemCount((prev) => prev - 1);
+      } else {
+        // 更新された場合はレスポンスのデータで更新
+        setCartItems((prev) =>
+          prev.map((item) => (item.id === cartItemId ? data : item))
+        );
+      }
     } catch (err) {
       console.error('数量更新エラー:', err);
       // エラー時は元に戻す
