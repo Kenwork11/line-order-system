@@ -7,7 +7,7 @@ import { useCart } from '@/hooks/useCart';
 
 export default function CartPage() {
   const { isAuthenticated, customer, error: authError, logout } = useLiffAuth();
-  const { cartItems } = useCart(isAuthenticated);
+  const { cartItems, handleUpdateQuantity } = useCart(isAuthenticated);
 
   // エラー表示用の統合
   const error = authError;
@@ -154,8 +154,33 @@ export default function CartPage() {
                     )}
                     <div className="flex items-center gap-4">
                       <span className="text-gray-600">
-                        {formatPrice(item.price)} × {item.quantity}
+                        {formatPrice(item.price)}
                       </span>
+                      {/* 数量変更ボタン */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={item.quantity <= 1}
+                          aria-label="数量を減らす"
+                        >
+                          -
+                        </button>
+                        <span className="w-12 text-center font-semibold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleUpdateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+                          aria-label="数量を増やす"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
 
