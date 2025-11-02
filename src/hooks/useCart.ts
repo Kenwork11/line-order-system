@@ -96,6 +96,7 @@ export const useCart = (isAuthenticated: boolean) => {
       const successMessage = `${productName}をカートに追加しました`;
 
       // 成功フィードバック
+      console.log('カート追加成功:', { productId, cartItem });
       alert(successMessage);
 
       // カート情報を再取得
