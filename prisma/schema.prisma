@@ -30,16 +30,17 @@ model User {
 
 // Products table - for product listing functionality
 model Product {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String     @db.VarChar(255)
-  description String?    @db.Text
-  price       Int        // 価格は円単位で保存
-  imageUrl    String?    @map("image_url") @db.Text
-  category    String?    @db.VarChar(100)
-  isActive    Boolean    @default(true) @map("is_active")
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String      @db.VarChar(255)
+  description String?     @db.Text
+  price       Int         // 価格は円単位で保存
+  imageUrl    String?     @map("image_url") @db.Text
+  category    String?     @db.VarChar(100)
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
   cartItems   CartItem[]
+  orderItems  OrderItem[]
 
   @@index([category], map: "idx_products_category")
   @@index([isActive], map: "idx_products_is_active")
@@ -58,6 +59,7 @@ model Customer {
   updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
   lastLoginAt  DateTime?  @map("last_login_at") @db.Timestamptz
   cartItems    CartItem[]
+  orders       Order[]
 
   @@index([lineUserId], map: "idx_customers_line_user_id")
   @@map("customers")
@@ -79,4 +81,47 @@ model CartItem {
   @@index([customerId], map: "idx_cart_items_customer_id")
   @@index([productId], map: "idx_cart_items_product_id")
   @@map("cart_items")
+}
+
+// Orders table - for order management
+model Order {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber   String      @unique @map("order_number") @db.VarChar(50)
+  customerId    String      @map("customer_id") @db.Uuid
+  status        String      @db.VarChar(50) // 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+  totalAmount   Int         @map("total_amount") // 合計金額（円単位）
+  paymentStatus String      @default("pending") @map("payment_status") @db.VarChar(50) // 'pending' | 'paid'
+  paymentMethod String?     @map("payment_method") @db.VarChar(50)
+  notes         String?     @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt   DateTime?   @map("completed_at") @db.Timestamptz
+
+  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([customerId], map: "idx_orders_customer_id")
+  @@index([status], map: "idx_orders_status")
+  @@index([createdAt], map: "idx_orders_created_at")
+  @@index([orderNumber], map: "idx_orders_order_number")
+  @@map("orders")
+}
+
+// Order items table - for order item details
+model OrderItem {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId      String   @map("order_id") @db.Uuid
+  productId    String   @map("product_id") @db.Uuid
+  productName  String   @map("product_name") @db.VarChar(255) // 商品名のスナップショット
+  productPrice Int      @map("product_price") // 価格のスナップショット（円単位）
+  quantity     Int      @default(1)
+  subtotal     Int // 小計（円単位）
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "idx_order_items_order_id")
+  @@index([productId], map: "idx_order_items_product_id")
+  @@map("order_items")
 }
