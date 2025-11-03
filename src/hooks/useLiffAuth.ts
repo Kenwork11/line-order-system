@@ -180,19 +180,18 @@ export const useLiffAuth = () => {
 
       console.log('セッション削除完了');
 
-      // LIFF側のログアウト
+      // LIFF初期化してログアウト
+      await liff.init({ liffId: LIFF_ID });
+
       if (liff.isLoggedIn()) {
         liff.logout();
       }
 
-      // ページをリロードして初期状態に戻す
-      window.location.reload();
+      // LINEログイン画面へ遷移
+      liff.login();
     } catch (err) {
       console.error('ログアウトエラー:', err);
-      // エラーが発生してもログアウトを試行
-      if (liff.isLoggedIn()) {
-        liff.logout();
-      }
+      // エラー時もログイン画面へ遷移を試行
       window.location.reload();
     }
   };
