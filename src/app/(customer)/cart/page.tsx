@@ -123,7 +123,7 @@ export default function CartPage() {
                     index !== cartItems.length - 1
                       ? 'border-b border-gray-200'
                       : ''
-                  }`}
+                  } ${item.quantity === 0 ? 'opacity-50 bg-gray-50' : ''}`}
                 >
                   {/* 商品画像 */}
                   <div className="relative w-20 h-20 flex-shrink-0 bg-gray-200 rounded-md overflow-hidden">
@@ -162,8 +162,7 @@ export default function CartPage() {
                           onClick={() =>
                             handleUpdateQuantity(item.id, item.quantity - 1)
                           }
-                          className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={item.quantity <= 1}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                           aria-label="数量を減らす"
                         >
                           -

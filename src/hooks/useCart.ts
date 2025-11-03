@@ -1,39 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
-
-type CartItem = {
-  id: string;
-  productId: string;
-  productName: string;
-  productDescription: string | null;
-  productImageUrl: string | null;
-  productCategory: string | null;
-  price: number;
-  quantity: number;
-  subtotal: number;
-};
+import { useCartStore } from '@/store/cartStore';
 
 /**
  * カート操作を管理するカスタムフック
+ * - Zustandストアを使用してフロントエンドのみで数量変更を管理
+ * - localStorageで永続化
+ * - サーバーからの初期データ取得とマージ処理
  *
  * @param {boolean} isAuthenticated - 認証済みかどうか
  * @returns {Object} カート操作に関する状態と関数
- * @returns {string | null} addingToCart - カートに追加中の商品ID
- * @returns {CartItem[]} cartItems - カート内の商品一覧
- * @returns {number} cartItemCount - カート内のアイテム数
- * @returns {boolean} loading - カート情報読み込み中かどうか
- * @returns {Function} handleAddToCart - カート追加処理
- * @returns {Function} refreshCart - カート情報を再取得
  */
 export const useCart = (isAuthenticated: boolean) => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartItemCount, setCartItemCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    items: cartItems,
+    loading,
+    setItems,
+    updateQuantity,
+    setLoading,
+    getItemCount,
+  } = useCartStore();
 
   /**
-   * カート情報を取得（商品一覧とアイテム数）
+   * サーバーからカート情報を取得し、localStorageの状態とマージ
    */
-  const fetchCartCount = useCallback(async () => {
+  const fetchCart = useCallback(async () => {
     if (!isAuthenticated) return;
 
     try {
@@ -45,136 +36,80 @@ export const useCart = (isAuthenticated: boolean) => {
       }
 
       const data = await response.json();
-      setCartItems(data.items || []);
-      setCartItemCount(data.itemCount || 0);
+      const serverItems = data.items || [];
+
+      // サーバーから取得したデータでストアを更新
+      // localStorageに既に変更があった場合は、それを優先する設計も可能
+      // 今回はサーバーデータを基準とし、localStorageは数量変更のみに使用
+      setItems(serverItems);
     } catch (err) {
       console.error('カート取得エラー:', err);
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, setItems, setLoading]);
 
-  // 認証後にカート情報を取得
+  // 認証後にサーバーからカート情報を取得
   useEffect(() => {
-    fetchCartCount();
-  }, [fetchCartCount]);
+    fetchCart();
+  }, [fetchCart]);
 
   /**
    * カートに商品を追加する
+   * 商品追加はサーバーに送信（在庫確認・価格検証のため）
    *
    * @param {string} productId - 追加する商品のID
    */
   const handleAddToCart = async (productId: string) => {
-    // ローディング状態を設定
     setAddingToCart(productId);
 
     try {
-      // カートに追加するリクエストボディを構築
-      const addToCartRequest = {
-        productId,
-        quantity: 1,
-      };
-
-      // API呼び出し
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(addToCartRequest),
+        body: JSON.stringify({ productId, quantity: 1 }),
       });
 
-      // レスポンスの検証
-      const isSuccess = response.ok;
-      if (!isSuccess) {
+      if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.error || 'カートへの追加に失敗しました';
-        throw new Error(errorMessage);
+        throw new Error(errorData.error || 'カートへの追加に失敗しました');
       }
 
-      // 成功データの取得
       const cartItem = await response.json();
-      const productName = cartItem.productName || '商品';
-      const successMessage = `${productName}をカートに追加しました`;
+      alert(`${cartItem.productName || '商品'}をカートに追加しました`);
 
-      // 成功フィードバック
-      alert(successMessage);
-
-      // カート情報を再取得
-      await fetchCartCount();
+      // サーバーから最新のカート情報を再取得
+      await fetchCart();
     } catch (err) {
       console.error('カート追加エラー:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'カートへの追加に失敗しました';
-      alert(errorMessage);
+      alert(
+        err instanceof Error ? err.message : 'カートへの追加に失敗しました'
+      );
     } finally {
-      // ローディング状態をリセット
       setAddingToCart(null);
     }
   };
 
   /**
-   * カートアイテムの数量を更新する
+   * カートアイテムの数量を更新する（フロントエンドのみ）
+   * - サーバーには送信しない
+   * - 数量0で削除
+   * - localStorageに自動保存
    *
    * @param {string} cartItemId - 更新するカートアイテムのID
    * @param {number} newQuantity - 新しい数量
    */
-  const handleUpdateQuantity = async (
-    cartItemId: string,
-    newQuantity: number
-  ) => {
-    // 楽観的UI更新
-    const previousCartItems = [...cartItems];
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === cartItemId
-            ? {
-                ...item,
-                quantity: newQuantity,
-                subtotal: item.price * newQuantity,
-              }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-
-    try {
-      const response = await fetch(`/api/cart/${cartItemId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quantity: newQuantity }),
-      });
-
-      if (!response.ok) {
-        throw new Error('数量更新に失敗しました');
-      }
-
-      const data = await response.json();
-
-      if (data.deleted) {
-        // 削除された場合はカートから除外
-        setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
-        setCartItemCount((prev) => prev - 1);
-      } else {
-        // 更新された場合はレスポンスのデータで更新
-        setCartItems((prev) =>
-          prev.map((item) => (item.id === cartItemId ? data : item))
-        );
-      }
-    } catch (err) {
-      console.error('数量更新エラー:', err);
-      // エラー時は元に戻す
-      setCartItems(previousCartItems);
-      alert('数量の更新に失敗しました');
-    }
+  const handleUpdateQuantity = (cartItemId: string, newQuantity: number) => {
+    updateQuantity(cartItemId, newQuantity);
   };
 
   return {
     addingToCart,
     cartItems,
-    cartItemCount,
+    cartItemCount: getItemCount(),
     loading,
     handleAddToCart,
     handleUpdateQuantity,
-    refreshCart: fetchCartCount,
+    refreshCart: fetchCart,
   };
 };
