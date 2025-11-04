@@ -191,7 +191,7 @@ export const useLiffAuth = () => {
       liff.login();
     } catch (err) {
       console.error('ログアウトエラー:', err);
-      // エラー時もログイン画面へ遷移を試行
+      // エラー時はページをリロードして初期状態に戻す
       window.location.reload();
     }
   };
