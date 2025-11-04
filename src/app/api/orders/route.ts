@@ -36,41 +36,68 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    // 注文番号を生成（例: ORD-20251104-123456）
-    const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
     // トランザクションで注文作成 + カート削除
-    const order = await prisma.$transaction(async (tx) => {
-      // 注文を作成
-      const newOrder = await tx.order.create({
-        data: {
-          orderNumber,
-          customerId,
-          status: 'pending',
-          totalAmount,
-          paymentStatus: 'pending',
-          orderItems: {
-            create: cartItems.map((item) => ({
-              productId: item.productId,
-              productName: item.product.name,
-              productPrice: item.product.price,
-              quantity: item.quantity,
-              subtotal: item.product.price * item.quantity,
-            })),
+    const order = await prisma.$transaction(
+      async (tx) => {
+        // 日付-連番形式の注文番号を生成（例: 20251104-001）
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+        // 当日の最新注文番号を取得して連番を決定
+        const latestOrder = await tx.order.findFirst({
+          where: {
+            orderNumber: {
+              startsWith: `${today}-`,
+            },
           },
-        },
-        include: {
-          orderItems: true,
-        },
-      });
+          orderBy: {
+            orderNumber: 'desc',
+          },
+          select: {
+            orderNumber: true,
+          },
+        });
 
-      // カートを空にする
-      await tx.cartItem.deleteMany({
-        where: { customerId },
-      });
+        const sequenceNumber = latestOrder
+          ? parseInt(latestOrder.orderNumber.split('-')[1]) + 1
+          : 1;
 
-      return newOrder;
-    });
+        const orderNumber = `${today}-${sequenceNumber.toString().padStart(3, '0')}`;
+
+        // 注文を作成
+        const newOrder = await tx.order.create({
+          data: {
+            orderNumber,
+            customerId,
+            status: 'pending',
+            totalAmount,
+            paymentStatus: 'pending',
+            orderItems: {
+              create: cartItems.map((item) => ({
+                productId: item.productId,
+                productName: item.product.name,
+                productPrice: item.product.price,
+                quantity: item.quantity,
+                subtotal: item.product.price * item.quantity,
+              })),
+            },
+          },
+          include: {
+            orderItems: true,
+          },
+        });
+
+        // カートを空にする
+        await tx.cartItem.deleteMany({
+          where: { customerId },
+        });
+
+        return newOrder;
+      },
+      {
+        maxWait: 5000,
+        timeout: 10000,
+      }
+    );
 
     return NextResponse.json(
       {
