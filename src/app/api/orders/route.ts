@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
     const order = await prisma.$transaction(
       async (tx) => {
         // 日付-連番形式の注文番号を生成（例: 20251104-001）
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        // 日本時間（JST）で日付を取得
+        const now = new Date();
+        const jstOffset = 9 * 60 * 60 * 1000; // 9時間をミリ秒に変換
+        const jstDate = new Date(now.getTime() + jstOffset);
+        const today = jstDate.toISOString().slice(0, 10).replace(/-/g, '');
 
         // 当日の最新注文番号を取得して連番を決定
         const latestOrder = await tx.order.findFirst({
