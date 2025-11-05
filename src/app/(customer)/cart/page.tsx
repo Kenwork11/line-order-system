@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLiffAuth } from '@/hooks/useLiffAuth';
@@ -7,7 +8,9 @@ import { useCart } from '@/hooks/useCart';
 
 export default function CartPage() {
   const { isAuthenticated, customer, error: authError, logout } = useLiffAuth();
-  const { cartItems, handleUpdateQuantity } = useCart(isAuthenticated);
+  const { cartItems, handleUpdateQuantity, refreshCart } =
+    useCart(isAuthenticated);
+  const [isOrdering, setIsOrdering] = React.useState(false);
 
   // エラー表示用の統合
   const error = authError;
@@ -19,6 +22,43 @@ export default function CartPage() {
 
   // 合計金額を計算
   const totalAmount = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+  // 注文可能な商品があるか（数量1以上の商品）
+  const hasOrderableItems = cartItems.some((item) => item.quantity > 0);
+
+  // 注文確定ハンドラー
+  const handleCheckout = async () => {
+    if (!hasOrderableItems) {
+      alert('注文可能な商品がありません');
+      return;
+    }
+
+    setIsOrdering(true);
+
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '注文の作成に失敗しました');
+      }
+
+      const data = await response.json();
+
+      alert(`注文が確定しました！\n注文番号: ${data.order.orderNumber}`);
+
+      // カートを再取得（サーバーで削除済みなので空になる）
+      await refreshCart();
+    } catch (err) {
+      console.error('注文エラー:', err);
+      alert(err instanceof Error ? err.message : '注文に失敗しました');
+    } finally {
+      setIsOrdering(false);
+    }
+  };
 
   // ========================================
   // エラー表示
@@ -210,10 +250,11 @@ export default function CartPage() {
             {/* アクションボタン */}
             <div className="flex flex-col gap-3">
               <button
-                className="w-full py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
-                disabled
+                onClick={handleCheckout}
+                disabled={!hasOrderableItems || isOrdering}
+                className="w-full py-4 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                注文を確定する（未実装）
+                {isOrdering ? '注文処理中...' : '注文を確定する'}
               </button>
               <Link
                 href="/menu"
