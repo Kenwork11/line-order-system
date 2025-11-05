@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
+import Toast from '@/components/ui/Toast';
 
 export default function MenuPage() {
   // カスタムフックで状態管理とロジックを分離
@@ -21,7 +22,7 @@ export default function MenuPage() {
     selectedCategory,
     setSelectedCategory,
   } = useProducts(isAuthenticated);
-  const { addingToCart, cartItemCount, handleAddToCart } =
+  const { addingToCart, cartItemCount, handleAddToCart, toast, closeToast } =
     useCart(isAuthenticated);
 
   // カテゴリ一覧
@@ -225,6 +226,11 @@ export default function MenuPage() {
           </div>
         )}
       </div>
+
+      {/* トースト通知 */}
+      {toast.show && (
+        <Toast message={toast.message} type={toast.type} onClose={closeToast} />
+      )}
     </div>
   );
 }

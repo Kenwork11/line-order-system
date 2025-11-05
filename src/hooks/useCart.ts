@@ -2,6 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
 /**
+ * トースト通知の状態管理用の型定義
+ */
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+/**
  * カート操作を管理するカスタムフック
  * - Zustandストアを使用してフロントエンドのみで数量変更を管理
  * - localStorageで永続化
@@ -12,6 +21,11 @@ import { useCartStore } from '@/store/cartStore';
  */
 export const useCart = (isAuthenticated: boolean) => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState>({
+    show: false,
+    message: '',
+    type: 'info',
+  });
   const {
     items: cartItems,
     loading,
@@ -76,15 +90,22 @@ export const useCart = (isAuthenticated: boolean) => {
       }
 
       const cartItem = await response.json();
-      alert(`${cartItem.productName || '商品'}をカートに追加しました`);
+      setToast({
+        show: true,
+        message: `${cartItem.productName || '商品'}をカートに追加しました`,
+        type: 'success',
+      });
 
       // サーバーから最新のカート情報を再取得
       await fetchCart();
     } catch (err) {
       console.error('カート追加エラー:', err);
-      alert(
-        err instanceof Error ? err.message : 'カートへの追加に失敗しました'
-      );
+      setToast({
+        show: true,
+        message:
+          err instanceof Error ? err.message : 'カートへの追加に失敗しました',
+        type: 'error',
+      });
     } finally {
       setAddingToCart(null);
     }
@@ -111,5 +132,7 @@ export const useCart = (isAuthenticated: boolean) => {
     handleAddToCart,
     handleUpdateQuantity,
     refreshCart: fetchCart,
+    toast,
+    closeToast: () => setToast({ show: false, message: '', type: 'info' }),
   };
 };
