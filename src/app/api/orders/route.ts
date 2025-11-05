@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { COOKIE_NAMES } from '@/lib/constants';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+// Day.jsのタイムゾーンプラグインを有効化
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 /**
  * POST /api/orders - カートから注文を作成
@@ -40,11 +47,8 @@ export async function POST(request: NextRequest) {
     const order = await prisma.$transaction(
       async (tx) => {
         // 日付-連番形式の注文番号を生成（例: 20251104-001）
-        // 日本時間（JST）で日付を取得
-        const now = new Date();
-        const jstOffset = 9 * 60 * 60 * 1000; // 9時間をミリ秒に変換
-        const jstDate = new Date(now.getTime() + jstOffset);
-        const today = jstDate.toISOString().slice(0, 10).replace(/-/g, '');
+        // Day.jsを使用して環境に依存せず日本時間（JST）で日付を取得
+        const today = dayjs().tz('Asia/Tokyo').format('YYYYMMDD');
 
         // 当日の最新注文番号を取得して連番を決定
         const latestOrder = await tx.order.findFirst({
@@ -61,9 +65,8 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const sequenceNumber = latestOrder
-          ? parseInt(latestOrder.orderNumber.split('-')[1]) + 1
-          : 1;
+        const lastSequence = latestOrder?.orderNumber.split('-')[1];
+        const sequenceNumber = lastSequence ? parseInt(lastSequence) + 1 : 1;
 
         const orderNumber = `${today}-${sequenceNumber.toString().padStart(3, '0')}`;
 
