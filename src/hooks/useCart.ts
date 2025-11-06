@@ -11,6 +11,15 @@ interface ToastState {
 }
 
 /**
+ * トースト通知の初期状態
+ */
+const INITIAL_TOAST_STATE: ToastState = {
+  show: false,
+  message: '',
+  type: 'info',
+};
+
+/**
  * カート操作を管理するカスタムフック
  * - Zustandストアを使用してフロントエンドのみで数量変更を管理
  * - localStorageで永続化
@@ -21,11 +30,7 @@ interface ToastState {
  */
 export const useCart = (isAuthenticated: boolean) => {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const [toast, setToast] = useState<ToastState>({
-    show: false,
-    message: '',
-    type: 'info',
-  });
+  const [toast, setToast] = useState<ToastState>(INITIAL_TOAST_STATE);
   const {
     items: cartItems,
     loading,
@@ -124,6 +129,10 @@ export const useCart = (isAuthenticated: boolean) => {
     updateQuantity(cartItemId, newQuantity);
   };
 
+  const closeToast = useCallback(() => {
+    setToast(INITIAL_TOAST_STATE);
+  }, []);
+
   return {
     addingToCart,
     cartItems,
@@ -133,6 +142,6 @@ export const useCart = (isAuthenticated: boolean) => {
     handleUpdateQuantity,
     refreshCart: fetchCart,
     toast,
-    closeToast: () => setToast({ show: false, message: '', type: 'info' }),
+    closeToast,
   };
 };
