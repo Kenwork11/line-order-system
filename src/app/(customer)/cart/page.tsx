@@ -49,16 +49,6 @@ export default function CartPage() {
 
   // 注文確定ハンドラー
   const handleCheckout = async () => {
-    if (!hasOrderableItems) {
-      setModal({
-        isOpen: true,
-        type: 'error',
-        title: 'エラー',
-        message: '注文可能な商品がありません',
-      });
-      return;
-    }
-
     setIsOrdering(true);
 
     try {
