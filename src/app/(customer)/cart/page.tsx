@@ -5,12 +5,33 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { useCart } from '@/hooks/useCart';
+import Modal from '@/components/ui/Modal';
+
+interface ModalState {
+  isOpen: boolean;
+  type: 'success' | 'error' | 'info';
+  title: string;
+  message: string;
+  orderNumber?: string;
+}
+
+const INITIAL_MODAL_STATE: ModalState = {
+  isOpen: false,
+  type: 'info',
+  title: '',
+  message: '',
+};
 
 export default function CartPage() {
   const { isAuthenticated, customer, error: authError, logout } = useLiffAuth();
   const { cartItems, handleUpdateQuantity, refreshCart } =
     useCart(isAuthenticated);
   const [isOrdering, setIsOrdering] = React.useState(false);
+  const [modal, setModal] = React.useState<ModalState>(INITIAL_MODAL_STATE);
+
+  const closeModal = React.useCallback(() => {
+    setModal(INITIAL_MODAL_STATE);
+  }, []);
 
   // エラー表示用の統合
   const error = authError;
@@ -29,7 +50,12 @@ export default function CartPage() {
   // 注文確定ハンドラー
   const handleCheckout = async () => {
     if (!hasOrderableItems) {
-      alert('注文可能な商品がありません');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'エラー',
+        message: '注文可能な商品がありません',
+      });
       return;
     }
 
@@ -48,13 +74,24 @@ export default function CartPage() {
 
       const data = await response.json();
 
-      alert(`注文が確定しました！\n注文番号: ${data.order.orderNumber}`);
+      setModal({
+        isOpen: true,
+        type: 'success',
+        title: '注文完了',
+        message: 'ご注文ありがとうございます！',
+        orderNumber: data.order.orderNumber,
+      });
 
       // カートを再取得（サーバーで削除済みなので空になる）
       await refreshCart();
     } catch (err) {
       console.error('注文エラー:', err);
-      alert(err instanceof Error ? err.message : '注文に失敗しました');
+      setModal({
+        isOpen: true,
+        type: 'error',
+        title: 'エラー',
+        message: err instanceof Error ? err.message : '注文に失敗しました',
+      });
     } finally {
       setIsOrdering(false);
     }
@@ -266,6 +303,16 @@ export default function CartPage() {
           </>
         )}
       </div>
+
+      {/* モーダル */}
+      <Modal
+        isOpen={modal.isOpen}
+        type={modal.type}
+        title={modal.title}
+        message={modal.message}
+        orderNumber={modal.orderNumber}
+        onClose={closeModal}
+      />
     </div>
   );
 }
