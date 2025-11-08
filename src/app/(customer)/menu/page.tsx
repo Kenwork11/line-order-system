@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useLiffAuth } from '@/hooks/useLiffAuth';
 import { useProducts } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
@@ -110,21 +111,33 @@ export default function MenuPage() {
           </h1>
           <p className="text-gray-600">お好きな商品をお選びください</p>
 
-          {/* カートボタン（固定位置） */}
-          <a
-            href="/cart"
-            className="fixed bottom-6 right-6 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50"
-            style={{ width: '60px', height: '60px' }}
-          >
-            <div className="relative">
-              <span className="text-2xl">🛒</span>
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </div>
-          </a>
+          {/* 右下固定ボタンエリア */}
+          <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+            {/* 注文履歴ボタン */}
+            <Link
+              href="/orders"
+              className="bg-white text-indigo-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center border-2 border-indigo-600"
+              style={{ width: '60px', height: '60px' }}
+            >
+              <span className="text-2xl">📋</span>
+            </Link>
+
+            {/* カートボタン */}
+            <a
+              href="/cart"
+              className="bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
+              style={{ width: '60px', height: '60px' }}
+            >
+              <div className="relative">
+                <span className="text-2xl">🛒</span>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+              </div>
+            </a>
+          </div>
         </div>
 
         {/* カテゴリフィルター */}
