@@ -123,7 +123,7 @@ export default function MenuPage() {
             </Link>
 
             {/* カートボタン */}
-            <a
+            <Link
               href="/cart"
               className="bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
               style={{ width: '60px', height: '60px' }}
@@ -136,7 +136,7 @@ export default function MenuPage() {
                   </span>
                 )}
               </div>
-            </a>
+            </Link>
           </div>
         </div>
 
