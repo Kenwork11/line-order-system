@@ -55,6 +55,12 @@ export default function CartPage() {
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        }),
       });
 
       if (!response.ok) {
