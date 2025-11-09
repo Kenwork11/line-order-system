@@ -56,3 +56,21 @@ export const ORDER_STATUS_FLOW: OrderStatus[] = [
 
 // エクスポート型（再エクスポート）
 export type { OrderStatus, PaymentStatus };
+
+// UIコンポーネント用の型定義（APIレスポンス形式）
+export interface OrderItemForUI {
+  id: string;
+  productName: string;
+  productPrice: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface OrderForUI {
+  id: string;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  orderItems: OrderItemForUI[];
+}

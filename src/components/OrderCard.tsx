@@ -1,22 +1,9 @@
 import dayjs from 'dayjs';
 import StatusBadge from './ui/StatusBadge';
-
-interface OrderItem {
-  id: string;
-  quantity: number;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: string;
-  totalAmount: number;
-  createdAt: string;
-  orderItems: OrderItem[];
-}
+import type { OrderForUI } from '@/types/order';
 
 interface OrderCardProps {
-  order: Order;
+  order: OrderForUI;
   onClick: () => void;
 }
 

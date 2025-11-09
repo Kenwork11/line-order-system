@@ -1,27 +1,11 @@
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import StatusBadge from './ui/StatusBadge';
-
-interface OrderItem {
-  id: string;
-  productName: string;
-  productPrice: number;
-  quantity: number;
-  subtotal: number;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: string;
-  totalAmount: number;
-  createdAt: string;
-  orderItems: OrderItem[];
-}
+import type { OrderForUI } from '@/types/order';
 
 interface OrderDetailModalProps {
   isOpen: boolean;
-  order: Order | null;
+  order: OrderForUI | null;
   onClose: () => void;
 }
 
