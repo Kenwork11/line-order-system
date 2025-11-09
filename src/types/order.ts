@@ -69,7 +69,7 @@ export interface OrderItemForUI {
 export interface OrderForUI {
   id: string;
   orderNumber: string;
-  status: string;
+  status: OrderStatus;
   totalAmount: number;
   createdAt: string;
   orderItems: OrderItemForUI[];
