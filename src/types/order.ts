@@ -15,7 +15,7 @@ export type OrderWithDetails = Order & {
 
 // 注文ステータスのラベル（日本語）
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: '未確認',
+  pending: '注文確認中',
   confirmed: '確認済み',
   preparing: '準備中',
   ready: '受取可能',
