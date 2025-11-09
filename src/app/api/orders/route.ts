@@ -22,16 +22,58 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // カートアイテムを取得（数量0のものは除外）
-    const cartItems = await prisma.cartItem.findMany({
+    // リクエストボディからカート情報を取得（フロントエンドの数量を使用）
+    const body = await request.json();
+    const { items: clientCartItems } = body;
+
+    if (!clientCartItems || clientCartItems.length === 0) {
+      return NextResponse.json({ error: 'カートが空です' }, { status: 400 });
+    }
+
+    // DBから商品情報を取得（価格・在庫確認のため）
+    const productIds = clientCartItems.map(
+      (item: { productId: string }) => item.productId
+    );
+    const products = await prisma.product.findMany({
       where: {
-        customerId,
-        quantity: { gt: 0 },
-      },
-      include: {
-        product: true,
+        id: { in: productIds },
+        isActive: true,
       },
     });
+
+    if (products.length !== clientCartItems.length) {
+      return NextResponse.json(
+        { error: '一部の商品が利用できません' },
+        { status: 400 }
+      );
+    }
+
+    // 商品情報とクライアントの数量をマージ
+    type CartItemWithProduct = {
+      productId: string;
+      product: (typeof products)[number];
+      quantity: number;
+    };
+
+    const cartItems = clientCartItems
+      .map(
+        (clientItem: {
+          productId: string;
+          quantity: number;
+        }): CartItemWithProduct | null => {
+          const product = products.find((p) => p.id === clientItem.productId);
+          if (!product || clientItem.quantity <= 0) return null;
+          return {
+            productId: product.id,
+            product,
+            quantity: clientItem.quantity,
+          };
+        }
+      )
+      .filter(
+        (item: CartItemWithProduct | null): item is CartItemWithProduct =>
+          item !== null
+      );
 
     if (cartItems.length === 0) {
       return NextResponse.json({ error: 'カートが空です' }, { status: 400 });
@@ -39,7 +81,8 @@ export async function POST(request: NextRequest) {
 
     // 合計金額を計算
     const totalAmount = cartItems.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
+      (sum: number, item: CartItemWithProduct) =>
+        sum + item.product.price * item.quantity,
       0
     );
 
@@ -79,7 +122,7 @@ export async function POST(request: NextRequest) {
             totalAmount,
             paymentStatus: 'pending',
             orderItems: {
-              create: cartItems.map((item) => ({
+              create: cartItems.map((item: CartItemWithProduct) => ({
                 productId: item.productId,
                 productName: item.product.name,
                 productPrice: item.product.price,
