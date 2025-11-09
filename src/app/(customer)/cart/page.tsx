@@ -33,6 +33,27 @@ export default function CartPage() {
     setModal(INITIAL_MODAL_STATE);
   }, []);
 
+  // ナビゲーションリンクコンポーネント
+  function NavigationLinks() {
+    return (
+      <>
+        <Link
+          href="/menu"
+          className="w-full py-4 bg-white text-indigo-600 text-lg font-semibold rounded-lg border-2 border-indigo-600 hover:bg-indigo-50 transition-colors text-center"
+        >
+          メニューに戻る
+        </Link>
+        <Link
+          href="/orders"
+          className="w-full py-4 bg-white text-gray-700 text-lg font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors text-center flex items-center justify-center gap-2"
+        >
+          <span>📋</span>
+          <span>注文履歴を見る</span>
+        </Link>
+      </>
+    );
+  }
+
   // エラー表示用の統合
   const error = authError;
 
@@ -172,12 +193,9 @@ export default function CartPage() {
             <p className="text-gray-600 mb-6">
               メニューから商品を追加してください
             </p>
-            <Link
-              href="/menu"
-              className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              メニューを見る
-            </Link>
+            <div className="flex flex-col gap-3 max-w-xs mx-auto">
+              <NavigationLinks />
+            </div>
           </div>
         ) : (
           <>
@@ -283,12 +301,7 @@ export default function CartPage() {
               >
                 {isOrdering ? '注文処理中...' : '注文を確定する'}
               </button>
-              <Link
-                href="/menu"
-                className="w-full py-4 bg-white text-indigo-600 text-lg font-semibold rounded-lg border-2 border-indigo-600 hover:bg-indigo-50 transition-colors text-center"
-              >
-                メニューに戻る
-              </Link>
+              <NavigationLinks />
             </div>
           </>
         )}
