@@ -15,7 +15,7 @@ export type OrderWithDetails = Order & {
 
 // 注文ステータスのラベル（日本語）
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: '未確認',
+  pending: '注文確認中',
   confirmed: '確認済み',
   preparing: '準備中',
   ready: '受取可能',
@@ -56,3 +56,21 @@ export const ORDER_STATUS_FLOW: OrderStatus[] = [
 
 // エクスポート型（再エクスポート）
 export type { OrderStatus, PaymentStatus };
+
+// UIコンポーネント用の型定義（APIレスポンス形式）
+export interface OrderItemForUI {
+  id: string;
+  productName: string;
+  productPrice: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface OrderForUI {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  totalAmount: number;
+  createdAt: string;
+  orderItems: OrderItemForUI[];
+}

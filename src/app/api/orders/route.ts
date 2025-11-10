@@ -5,10 +5,70 @@ import { COOKIE_NAMES } from '@/lib/constants';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import type { OrderForUI } from '@/types/order';
 
 // Day.jsのタイムゾーンプラグインを有効化
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+/**
+ * GET /api/orders - 注文履歴を取得（カーソルベースページネーション）
+ */
+export async function GET(request: NextRequest) {
+  const cookieStore = await cookies();
+  const customerId = cookieStore.get(COOKIE_NAMES.LINE_CUSTOMER_ID)?.value;
+
+  if (!customerId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const cursor = searchParams.get('cursor');
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+
+    const orders = await prisma.order.findMany({
+      where: { customerId },
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        orderItems: true,
+      },
+    });
+
+    const hasMore = orders.length > limit;
+    const ordersToReturn = hasMore ? orders.slice(0, limit) : orders;
+    const nextCursor = hasMore ? orders[limit].id : null;
+
+    const ordersForUI: OrderForUI[] = ordersToReturn.map((order) => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt.toISOString(),
+      orderItems: order.orderItems.map((item) => ({
+        id: item.id,
+        productName: item.productName,
+        productPrice: item.productPrice,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+      })),
+    }));
+
+    return NextResponse.json({
+      orders: ordersForUI,
+      nextCursor,
+    });
+  } catch (error) {
+    console.error('注文履歴取得エラー:', error);
+    return NextResponse.json(
+      { error: '注文履歴の取得に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
 
 /**
  * POST /api/orders - カートから注文を作成
