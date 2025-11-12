@@ -1,321 +1,351 @@
-# Next.js + Supabase + Vercel App Skeleton
+# LINE連携ハンバーガーショップ注文システム
 
-フォークしてすぐに開発開始できる、フルスタックWebアプリケーションのスケルトンプロジェクトです。
+> Next.js 15 + Supabase + Prisma で構築した、LINE LIFF対応のリアルタイム注文管理システム
 
-## 🚀 特徴
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 
-- **Next.js 15** - App Router、Server Components、TypeScript
-- **Supabase** - データベース、認証、リアルタイム機能
-- **Vercel** - 本番環境へのワンクリックデプロイ
-- **Tailwind CSS** - レスポンシブなUIデザイン
-- **Zustand** - 軽量な状態管理
-- **Jest** - テスト環境
-- **ESLint + Prettier + Husky** - コード品質管理
-- **GitHub Actions** - CI/CDパイプライン（テスト・ビルド検証）
+## 🎯 デモ
 
-## 🛠 技術スタック
-
-| カテゴリ       | 技術                         |
-| -------------- | ---------------------------- |
-| フレームワーク | Next.js 15 (App Router)      |
-| データベース   | Supabase PostgreSQL          |
-| ORM            | Prisma                       |
-| 認証           | Supabase Auth                |
-| UI             | Tailwind CSS                 |
-| 状態管理       | Zustand                      |
-| テスト         | Jest + React Testing Library |
-| CI/CD          | GitHub Actions               |
-| デプロイ       | Vercel                       |
-| 言語           | TypeScript                   |
-
-## 🚀 クイックスタート
-
-### 最速セットアップ（3分で完了）
-
-```bash
-# 1. プロジェクトの取得
-git clone <repository-url>
-cd nextjs-app-skeleton
-
-# 2. 依存関係のインストール
-npm install
-
-# 3. 環境変数ファイルのセットアップ
-cp .env.example .env
-
-# 4. Supabaseローカル環境の起動
-npx supabase start
-
-# 5. Prismaクライアントの生成
-npm run db:generate
-
-# 6. データベースの初期化（テーブル作成 + マイグレーション）
-npm run db:migrate
-
-# 7. サンプルデータの投入
-npm run db:seed
-
-# 8. 開発サーバーの起動
-npm run dev
-```
-
-**🎉 完了！** [http://localhost:3000](http://localhost:3000) でアプリケーションが動作します。
+- **🏪 店舗管理画面**: https://line-order-system.vercel.app/login
+- **📱 顧客メニュー**: https://line-order-system.vercel.app/menu _(LINE認証が必要です)_
 
 ---
 
-## 🔧 詳細セットアップ
+## 📋 プロジェクト概要
 
-### 1. プロジェクトの取得
+飲食店向けのLINE連携注文システムです。顧客はLINEアプリから商品を注文でき、店舗スタッフはリアルタイムで注文を管理できます。
 
-```bash
-# 既存プロジェクトをクローン
-git clone <repository-url>
-cd nextjs-app-skeleton
+モダンなフルスタック技術を使用し、**型安全性**、**リアルタイム性**、**保守性**を重視して開発しました。
 
-# またはテンプレートとして使用
-npx degit <repository-url> my-new-project
-cd my-new-project
+### 開発情報
+
+- **開発期間**: 2025年7月〜11月（約4ヶ月）
+- **開発体制**: 個人開発
+- **コード行数**: 約5,000行（TypeScript）
+
+### 技術的な成果
+
+- ✅ **型安全性**: TypeScript採用率100%、厳格な型チェック
+- ✅ **コード品質**: ESLint・Prettier + Huskyによるコミット時自動チェック
+- ✅ **CI/CD**: GitHub Actions による自動テスト・ビルド検証
+- ✅ **設計**: カスタムフックによるロジック分離、再利用性の高いコンポーネント設計
+
+### 主な機能
+
+#### 👥 顧客側（LINE LIFF）
+
+- ✅ **LINE認証** - LINE LIFFによる自動ログイン
+- ✅ **商品閲覧** - カテゴリ別フィルタリング機能
+- ✅ **カート機能** - 数量調整・削除・合計金額表示
+- ✅ **注文確定** - トランザクション処理による確実な注文
+- ✅ **注文履歴** - 過去の注文確認
+- ✅ **リアルタイム更新** - 注文状況の即時反映
+
+#### 🏪 店舗管理側
+
+- ✅ **認証システム** - Supabase Authによる安全なログイン
+- ✅ **注文管理** - ステータス変更（pending→confirmed→preparing→ready→completed）
+- ✅ **支払い管理** - 支払いステータスの更新
+- ✅ **商品管理** - 商品のCRUD操作（作成・編集・削除）
+- ✅ **ダッシュボード** - リアルタイム注文状況表示
+- ✅ **顧客管理** - LINE利用者の管理
+
+---
+
+## 🛠 技術スタック
+
+| カテゴリ           | 技術                         | 採用理由                                        |
+| ------------------ | ---------------------------- | ----------------------------------------------- |
+| **フロントエンド** | Next.js 15 (App Router)      | React Server Components・SSR対応、SEO最適化     |
+| **バックエンド**   | Next.js API Routes           | フルスタック構成、エンドポイント管理の簡素化    |
+| **データベース**   | Supabase PostgreSQL          | リアルタイム機能、認証との統合                  |
+| **ORM**            | Prisma                       | 型安全なDB操作、マイグレーション管理            |
+| **認証**           | Supabase Auth / LINE LIFF    | 管理者・顧客で異なる認証フロー                  |
+| **状態管理**       | Zustand                      | 軽量・シンプルな設計、Reduxより学習コストが低い |
+| **スタイリング**   | Tailwind CSS                 | ユーティリティファーストによる高速開発          |
+| **テスト**         | Jest + React Testing Library | コンポーネントテスト                            |
+| **CI/CD**          | GitHub Actions + Vercel      | 自動テスト・ビルド検証・デプロイ                |
+| **コード品質**     | ESLint + Prettier + Husky    | コード品質の自動チェック                        |
+
+---
+
+## 💡 技術的なこだわり
+
+### 1. カスタムフック設計
+
+ロジックとUIを完全に分離し、テスタビリティとメンテナンス性を向上させました。
+
+```typescript
+// ロジックをカスタムフックに集約
+const { isAuthenticated, customer, logout } = useLiffAuth();
+const { products, selectedCategory, setSelectedCategory } = useProducts();
+const { addingToCart, handleAddToCart } = useCart();
 ```
 
-### 2. Node.js環境のセットアップ
+**実装例:**
 
-プロジェクトでは `.tool-versions` ファイルでNode.jsバージョンを管理しています。
+- `useLiffAuth` - LINE LIFF認証管理
+- `useCart` - カート操作・状態管理
+- `useOrders` - 注文一覧取得・リアルタイム更新
+- `useOrderActions` - 注文ステータス更新
 
-**asdf使用の場合（推奨）:**
+### 2. リアルタイム更新
 
-```bash
-asdf install nodejs
+Supabase Realtimeを活用し、注文ステータスの即時反映を実現しました。
+
+```typescript
+// 注文テーブルの変更を監視
+supabase
+  .channel('orders')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'orders' },
+    () => refetch()
+  )
+  .subscribe();
 ```
 
-**その他のバージョン管理ツール:**
+### 3. トランザクション処理
 
-- nvm: `nvm use 20`
-- 直接インストール: Node.js 20.x以上
+注文確定時、以下の処理を1トランザクションで実行し、データ整合性を保証しました。
 
-### 3. 依存関係のインストール
+1. カート内容のバリデーション
+2. 注文レコード作成（`orders`テーブル）
+3. 注文明細作成（`order_items`テーブル・スナップショット方式）
+4. カート削除（`cart_items`テーブル）
+
+### 4. エラーハンドリング
+
+Zodによる入力バリデーションと、ユーザーフレンドリーな通知を実装しました。
+
+- **Toast通知** - 一時的な成功/エラーメッセージ
+- **Modal** - 重要な確認・エラー表示
+- **型安全なバリデーション** - Zodスキーマによる実行時チェック
+
+### 5. パフォーマンス最適化
+
+- Next.js Image最適化（自動WebP変換、遅延読み込み）
+- データベースインデックス設計（`customer_id`, `status`, `created_at`等）
+- Server Componentsによる初回レンダリング高速化
+
+### 6. セキュリティ対策
+
+- Row Level Security (RLS) ポリシーによるアクセス制御
+- SQL Injectionを防ぐPrisma使用
+- 環境変数による機密情報管理
+- CORS設定
+
+---
+
+## 📊 データベース設計
+
+```
+customers (LINE利用者)
+  ├── id: UUID
+  ├── line_user_id: String (LINE固有ID)
+  ├── display_name: String
+  └── picture_url: String
+      ↓ 1:N
+cart_items (カート)
+  ├── customer_id → customers
+  ├── product_id → products
+  └── quantity: Int
+      ↓ 注文確定時にトランザクション処理
+orders (注文)
+  ├── order_number: String (ユニーク注文番号)
+  ├── customer_id → customers
+  ├── status: OrderStatus (pending/confirmed/preparing/ready/completed/cancelled)
+  ├── payment_status: PaymentStatus (pending/paid)
+  └── total_amount: Int
+      ↓ 1:N
+order_items (注文明細・スナップショット)
+  ├── order_id → orders
+  ├── product_id → products (参照のみ)
+  ├── product_name: String (注文時の商品名)
+  ├── product_price: Int (注文時の価格)
+  └── quantity: Int
+```
+
+**設計のポイント:**
+
+- `order_items`はスナップショット方式で商品情報を保存（商品削除・価格変更の影響を受けない）
+- `cart_items`は`customer_id`と`product_id`のユニーク制約で重複防止
+- 各テーブルに適切なインデックスを設定（検索パフォーマンス向上）
+
+---
+
+## 🚀 ローカル環境での起動
 
 ```bash
+git clone https://github.com/Kenwork11/line-order-system.git
+cd line-order-system
 npm install
-```
-
-### 4. Supabaseセットアップ
-
-**A. ローカル開発環境（推奨・簡単）**
-
-Docker が必要です：
-
-```bash
-# Supabaseローカル環境の起動
-npx supabase start
-
-# Prismaクライアント生成
-npm run db:generate
-
-# データベースの初期化（マイグレーション適用）
 npm run db:migrate
-
-# サンプルデータの投入
 npm run db:seed
-```
-
-環境変数は`.env.example`をコピーして作成した`.env`ファイルに設定済みなので、そのまま開発を開始できます。
-
-**B. Supabaseクラウド（本番用）**
-
-1. [Supabase](https://supabase.com)でプロジェクトを作成
-2. `.env`ファイルを編集：
-
-```bash
-# Supabaseクラウド設定に変更
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-DATABASE_URL=your-postgres-connection-string
-```
-
-### 5. 開発サーバーの起動
-
-```bash
 npm run dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いて確認してください。
+詳細なセットアップ手順（Docker、Supabase設定等）は [セットアップガイド](./docs/setup.md) を参照してください。
 
-### 🔗 アクセス情報
-
-開発環境で利用できるURL：
-
-- **アプリケーション**: http://localhost:3000
-- **Supabase Studio**: http://localhost:54323 （データベース管理画面）
-- **Supabase API**: http://localhost:54321 （REST API）
-- **PostgreSQL**: localhost:54322 （直接DB接続）
-
-## 📁 プロジェクト構成
-
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API Routes
-│   ├── globals.css        # グローバルスタイル
-│   ├── layout.tsx         # ルートレイアウト
-│   └── page.tsx           # ホームページ
-├── components/            # Reactコンポーネント
-│   ├── ui/               # 再利用可能なUIコンポーネント
-│   └── *.tsx             # ページ固有のコンポーネント
-├── hooks/                # カスタムReactフック
-├── lib/                  # ユーティリティ・設定
-│   ├── supabase.ts       # Supabaseクライアント（Auth・リアルタイム用）
-│   ├── prisma.ts         # Prismaクライアント（CRUD用）
-│   ├── env.ts            # 環境変数の型定義
-│   └── utils.ts          # 汎用ユーティリティ
-├── store/                # Zustand状態管理
-├── types/                # TypeScript型定義
-└── utils/                # API関連ユーティリティ
-prisma/
-├── schema.prisma         # データベーススキーマ定義
-├── migrations/           # マイグレーションファイル
-└── seed.ts              # シードデータ
-```
+---
 
 ## 🔧 開発コマンド
 
 ```bash
-# 開発サーバー起動
-npm run dev
-
-# 本番ビルド（データベースマイグレーション含む）
-npm run build
-
-# 開発用ビルド（マイグレーション無し）
-npm run build:dev
-
-# 本番サーバー起動
-npm run start
-
-# データベース関連
-npm run db:generate    # Prismaクライアント生成
-npm run db:push        # スキーマをデータベースに適用
-npm run db:migrate     # マイグレーション作成・適用
-npm run db:seed        # サンプルデータ投入
-npm run db:studio      # Prisma Studio起動
-
-# テスト実行
-npm test
-npm run test:watch
-npm run test:coverage
-
-# コード品質チェック
-npm run lint
-npm run format:check
-npm run format
+npm run dev          # 開発サーバー起動
+npm run build        # 本番ビルド
+npm test             # テスト実行
+npm run db:migrate   # データベースマイグレーション
 ```
 
-## 🗄️ データベース管理
+その他のコマンドは `package.json` または [開発ガイド](./docs/development.md) を参照してください。
 
-### スキーマ管理（Prisma）
+---
+
+## 📁 プロジェクト構造
+
+```
+src/
+├── app/
+│   ├── (customer)/      # 顧客側ページ（LIFF）
+│   ├── (store)/         # 店舗管理側ページ
+│   └── api/             # API Routes
+├── components/          # UIコンポーネント
+├── hooks/               # カスタムフック
+├── lib/                 # ユーティリティ・設定
+├── store/               # Zustand状態管理
+└── types/               # TypeScript型定義
+```
+
+詳細なディレクトリ構造は [プロジェクト構造ガイド](./docs/project-structure.md) を参照してください。
+
+---
+
+## 🔄 CI/CD パイプライン
+
+GitHub Actionsで以下を自動実行しています：
+
+**Pull Request時:**
+
+1. 依存関係のインストール
+2. Prismaクライアント生成
+3. ESLintによるコードチェック
+4. Jestによるテスト実行
+5. Next.jsビルド検証
+
+**mainブランチマージ時:**
+
+- Vercel本番環境への自動デプロイ
+
+ワークフローファイル: [.github/workflows/deploy-preview.yml](.github/workflows/deploy-preview.yml)
+
+---
+
+## 📝 開発の背景
+
+### 課題
+
+飲食店の注文プロセスには以下の課題がありました：
+
+- 電話注文の取りこぼし・聞き間違い
+- 手書きメモによる調理ミス
+- 注文状況の可視化が困難
+- 顧客の待ち時間が不透明
+
+### 解決策
+
+1. **LINE LIFFで利用障壁を低減** - アプリインストール不要、LINE経由で簡単注文
+2. **リアルタイム更新で効率化** - 注文状況を即座に把握、調理フローの最適化
+3. **Prisma + Supabaseで保守性向上** - 型安全な開発、スキーマ変更の容易さ
+4. **トランザクション処理でデータ整合性保証** - カート削除・注文作成を確実に実行
+
+### 実装の難所と解決策
+
+#### 1. カート数量の整合性問題
+
+**課題**: 注文確定時にカート数量が0になる商品が注文に含まれてしまう
+**解決**: クライアント側でのバリデーション強化 + サーバー側での再検証を実装。`quantity > 0` の商品のみを注文対象とするフィルタリングロジックを追加。
+
+#### 2. LIFF認証とSupabase認証の共存
+
+**課題**: 顧客側（LINE LIFF）と管理者側（Supabase Auth）で異なる認証フローが必要
+**解決**: カスタムフック（`useLiffAuth`、`useAuth`）で認証ロジックを抽象化。各認証方式に対応した統一的なインターフェースを提供。
+
+#### 3. リアルタイム更新のパフォーマンス
+
+**課題**: 注文が増えるとSupabase Realtimeのサブスクリプションが重くなる
+**解決**: ステータスフィルタリングで必要な注文のみを購読。楽観的UI更新により体感速度を向上。
+
+### 今後の拡張可能性
+
+このシステムは以下の機能拡張が可能な設計になっています：
+
+- プッシュ通知機能（LINE Messaging API連携）
+- 売上分析ダッシュボード（データ可視化）
+- 在庫管理機能（商品マスタ連携）
+- QRコード注文（テーブルオーダー対応）
+- 多言語対応（i18n対応）
+
+---
+
+## 🧪 テスト
+
+Jest + React Testing Library によるコンポーネントテスト・カスタムフックのテストを実装しています。
 
 ```bash
-# スキーマ変更後の手順
-1. prisma/schema.prisma を編集
-2. npm run db:migrate     # 本番用マイグレーション作成
+npm test                 # テスト実行
+npm run test:coverage    # カバレッジ確認
 ```
 
-### クラウド環境（本番用）
+---
 
-1. [Supabase](https://supabase.com)でプロジェクトを作成
-2. データベースのURLとAPIキーを取得
-3. `.env`に設定を追加
-4. `npm run db:migrate` でマイグレーションを適用
+## 🚢 デプロイ
 
-### ローカル環境（開発用）
+本番環境は **Vercel** で自動デプロイしています。
 
-```bash
-# Supabaseローカル環境起動
-npx supabase start
+- **自動デプロイ**: mainブランチへのプッシュで本番環境を自動更新
+- **プレビュー環境**: Pull Requestごとにプレビュー環境を自動生成
+- **データベース**: Supabase PostgreSQL（本番環境）
+- **CI/CD**: GitHub Actionsによる自動テスト・ビルド検証
 
-# Prismaセットアップ
-npm run db:generate    # クライアント生成
-npm run db:migrate     # マイグレーション適用
-npm run db:seed        # データ投入
-```
+デプロイ方法や環境変数の設定など、詳細は [デプロイガイド](./docs/deployment.md) を参照してください。
 
-詳細は [docs/setup.md](./docs/setup.md) を参照してください。
+---
 
-## 🔄 CI/CD
+## 🔗 関連リンク
 
-### GitHub Actions
+- **デモアプリ**: [https://line-order-system.vercel.app/login](https://line-order-system.vercel.app/login)
+- **GitHubリポジトリ**: [https://github.com/Kenwork11/line-order-system](https://github.com/Kenwork11/line-order-system)
 
-Pull Request作成時に以下が自動実行されます：
+開発者向けドキュメントは `docs/` フォルダを参照してください。
 
-- 依存関係のインストール
-- Prismaクライアント生成
-- ESLintによるコードチェック
-- Jestによるテスト実行
-- Next.jsビルド検証
-
-ワークフローファイル: `.github/workflows/deploy-preview.yml`
-
-## 🚢 Vercelデプロイ
-
-### 自動デプロイ（推奨）
-
-1. GitHubリポジトリをVercelに接続
-2. 環境変数を設定
-3. Pull Requestごとにプレビュー環境が自動デプロイ
-4. mainブランチへのマージで本番環境が自動デプロイ
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-### 環境変数設定
-
-# SUPABASE_SERVICE_KEY
-
-Supabase Dashboard → Project Settings → API → service_role キーをコピーして設定
-**重要**:
-このキーは.envで管理してprocess.envで使用するように
-
-Vercelダッシュボードで以下の環境変数を設定：
-
-**必須環境変数:**
-
-```
-# Supabase設定
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# データベース
-DATABASE_URL=your-postgres-connection-string
-DIRECT_URL=your-postgres-direct-connection-string
-
-# アプリケーション設定
-NODE_ENV=production
-```
-
-**注意:**
-
-- `DIRECT_URL`はPrismaマイグレーションで使用
-- 本番環境では`DATABASE_URL`と`DIRECT_URL`を分けることを推奨
-
-## 📚 ドキュメント
-
-- [セットアップガイド](./docs/setup.md) - 詳細なセットアップ手順
-- [開発ガイド](./docs/development.md) - 開発の進め方
-- [コンポーネントガイド](./docs/components.md) - UIコンポーネントの使用方法
-- [API仕様](./docs/api.md) - APIエンドポイントの詳細
-- [状態管理ガイド](./docs/state-management.md) - Zustandストアの使い方
-- [デプロイガイド](./docs/deployment.md) - 本番環境へのデプロイ方法
-
-## 🤝 貢献
-
-1. このリポジトリをフォーク
-2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチをプッシュ (`git push origin feature/amazing-feature`)
-5. Pull Requestを作成
+---
 
 ## 📄 ライセンス
 
 MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
-## 🆘 サポート
+---
 
-問題や質問がある場合は、[Issues](https://github.com/kudo-sho/nextjs-app-skeleton/issues)を作成してください。
+## 📚 このプロジェクトで学んだこと
+
+- **Next.js 15 App Router**: Server ComponentsとClient Componentsの使い分け、データフェッチング戦略
+- **Prisma**: マイグレーション管理、リレーション設計、トランザクション処理
+- **Supabase Realtime**: WebSocket接続の管理、再接続処理、リアルタイム同期
+- **LINE LIFF SDK**: OAuth認証フロー、プロフィール取得、LIFF環境の制約対応
+- **トランザクション処理**: データ整合性の重要性、ロールバック処理、冪等性の実装
+- **状態管理設計**: カスタムフックによるロジック分離、Zustandによる軽量な状態管理
+
+---
+
+## 👤 作成者
+
+**Kenwork11**
+**kudo-sho**
+
+- GitHub: [@Kenwork11](https://github.com/Kenwork11)
+- Portfolio:
+  - 店舗管理画面: https://line-order-system.vercel.app/login
+  - 顧客注文アプリ: https://line-order-system.vercel.app/menu
