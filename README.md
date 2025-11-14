@@ -317,7 +317,7 @@ Jest + React Testing Library によるテスト環境を構築済みです。
 ## 🔗 関連リンク
 
 - **デモアプリ**: [https://line-order-system.vercel.app/login](https://line-order-system.vercel.app/login)
-- **GitHubリポジトリ**: [https://github.com/Kenwork11/line-order-system](https://github.com/Kenwork11/line-order-system)
+- **GitHubリポジトリ**: [line-order-system](https://github.com/Kenwork11/line-order-system)
 
 開発者向けドキュメントは `docs/` フォルダを参照してください。
 
