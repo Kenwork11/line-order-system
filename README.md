@@ -220,8 +220,6 @@ src/
 └── types/               # TypeScript型定義
 ```
 
-詳細なディレクトリ構造は [プロジェクト構造ガイド](./docs/project-structure.md) を参照してください。
-
 ---
 
 ## 🔄 CI/CD パイプライン
