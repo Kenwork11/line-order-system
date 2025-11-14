@@ -182,6 +182,7 @@ order_items (注文明細・スナップショット)
 git clone https://github.com/Kenwork11/line-order-system.git
 cd line-order-system
 npm install
+npx supabase start
 npm run db:migrate
 npm run db:seed
 npm run dev
